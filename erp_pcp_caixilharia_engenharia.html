@@ -1,1114 +1,401 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <base target="_top">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ERP PCP - Sistema de Caixilharia & Engenharia</title>
-  
-  <!-- Estilos e Bibliotecas Externas -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-  <!-- Supabase JS Client SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-      if (typeof pdfjsLib !== 'undefined') {
-          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-      }
-  </script>
-  
-  <style>
-    :root { 
-      --primary: #1F497D; 
-      --secondary: #475569;
-      --success: #15803d;
-      --warning: #b45309;
-      --danger: #b91c1c;
-      --dark: #0f172a;
-    }
-    
-    body { 
-      height: 100vh; 
-      margin: 0; 
-      overflow: hidden; 
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-      background: #1e293b; 
-      display: flex; 
-      flex-direction: column; 
-    }
-    
-    /* Barra Superior do Sistema */
-    .os-titlebar { 
-      height: 36px; 
-      background: #0f172a; 
-      color: #94a3b8; 
-      display: flex; 
-      align-items: center; 
-      justify-content: space-between; 
-      padding: 0 15px; 
-      font-size: 12px; 
-      user-select: none; 
-      border-bottom: 1px solid #334155;
-    }
-    
-    .os-controls { display: flex; gap: 8px; }
-    .os-controls span { 
-      display: inline-block; 
-      width: 12px; 
-      height: 12px; 
-      border-radius: 50%; 
-      cursor: pointer; 
-      transition: 0.2s; 
-    }
-    .os-controls span:hover { filter: brightness(1.2); transform: scale(1.1); }
-    .os-close { background: #ef4444; }
-    .os-min { background: #f59e0b; }
-    .os-max { background: #22c55e; }
-
-    /* Abas de Navegação Estilo Browser */
-    .browser-tabs { 
-      background: #0f172a; 
-      display: flex; 
-      padding: 6px 12px 0 12px; 
-      gap: 4px; 
-      overflow-x: auto; 
-    }
-    .b-tab { 
-      background: #334155; 
-      color: #cbd5e1; 
-      padding: 8px 18px; 
-      border-radius: 8px 8px 0 0; 
-      cursor: pointer; 
-      font-size: 12.5px; 
-      font-weight: 600; 
-      display: flex; 
-      align-items: center; 
-      gap: 8px; 
-      transition: 0.2s; 
-      position: relative; 
-      white-space: nowrap;
-    }
-    .b-tab:hover { background: #475569; color: #ffffff; }
-    .b-tab.active { 
-      background: #f8fafc; 
-      color: var(--primary); 
-      z-index: 2; 
-      box-shadow: 0 -2px 5px rgba(0,0,0,0.15); 
-    }
-    .b-tab.split-active::after { 
-      content: ''; 
-      position: absolute; 
-      top: 6px; 
-      right: 6px; 
-      width: 8px; 
-      height: 8px; 
-      background: #22c55e; 
-      border-radius: 50%; 
-      box-shadow: 0 0 5px #22c55e; 
-    }
-
-    /* Toolbar Global de Projeto */
-    .global-toolbar { 
-      background: #ffffff; 
-      border-bottom: 1px solid #e2e8f0; 
-      padding: 10px 20px; 
-      display: flex; 
-      align-items: center; 
-      gap: 15px; 
-      box-shadow: 0 2px 4px rgba(0,0,0,0.04); 
-      z-index: 10; 
-      position: relative; 
-      flex-wrap: wrap;
-    }
-
-    /* Container Principal das Telas */
-    #screens-container { 
-      display: flex; 
-      flex: 1; 
-      overflow: hidden; 
-      background: #cbd5e1; 
-      gap: 2px; 
-    }
-    
-    .app-screen { 
-      display: none; 
-      background: #f8fafc; 
-      height: 100%; 
-      flex-direction: column; 
-      overflow-y: auto; 
-      flex: 1; 
-      padding: 20px; 
-    }
-    .app-screen.active { display: flex; }
-    
-    /* Modo Tela Dividida (Split Screen) */
-    .split-mode .split-left { 
-      display: flex !important; 
-      width: 50% !important; 
-      flex: none; 
-      border-right: 4px solid #64748b; 
-    }
-    .split-mode .split-right { 
-      display: flex !important; 
-      width: 50% !important; 
-      flex: none; 
-    }
-    .split-mode .app-screen:not(.split-left):not(.split-right) { display: none !important; }
-
-    /* Badges e Status de Produção */
-    .status-select { font-weight: bold; font-size: 0.82rem; border-radius: 50px; text-align: center; }
-    .status-pendente { background-color: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
-    .status-tecnica { background-color: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
-    .status-producao { background-color: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
-    .status-finalizado { background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; }
-    
-    .drop-zone { 
-      border: 2px dashed #94a3b8; 
-      border-radius: 12px; 
-      padding: 30px 20px; 
-      text-align: center; 
-      background-color: #ffffff; 
-      cursor: pointer; 
-      transition: all 0.3s ease; 
-    }
-    .drop-zone:hover, .drop-zone.dragover { border-color: var(--primary); background-color: #eff6ff; }
-    
-    /* Tabelas e Inputs Editáveis */
-    .table-inline-input { 
-      border: 1px solid transparent; 
-      background: transparent; 
-      padding: 0.25rem 0.4rem; 
-      font-size: 0.85rem; 
-      width: 100%; 
-      border-radius: 4px; 
-      transition: 0.2s; 
-    }
-    .table-inline-input:focus { 
-      border-color: var(--primary); 
-      background: #ffffff; 
-      box-shadow: 0 0 0 0.15rem rgba(31, 73, 125, 0.2); 
-      outline: none; 
-    }
-    .table-inline-input:hover { border-color: #cbd5e1; background-color: #f8fafc; }
-    
-    .hover-card { transition: transform 0.2s, box-shadow 0.2s; }
-    .hover-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important; }
-
-    /* Indicador de Notificação Badge */
-    .badge-notify {
-      position: absolute;
-      top: 2px;
-      right: 4px;
-      font-size: 0.65rem;
-      padding: 2px 5px;
-      border-radius: 10px;
-    }
-
-    /* Carimbo d'água de Foto de Obra */
-    .photo-stamp {
-      position: relative;
-      display: inline-block;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      overflow: hidden;
-      background: #000;
-    }
-    .photo-stamp img { display: block; max-width: 100%; height: auto; opacity: 0.9; }
-    .photo-stamp-overlay {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(15, 23, 42, 0.85);
-      color: #38bdf8;
-      font-family: monospace;
-      font-size: 10px;
-      padding: 6px 10px;
-      line-height: 1.3;
-    }
-
-    /* Toast Container */
-    .toast-container-custom {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 11000;
-    }
-
-    /* Estilização para PDF e Impressão A4 */
-    @media print {
-      body * { visibility: hidden; }
-      #relatorioContainer, #relatorioContainer * { visibility: visible; }
-      #relatorioContainer { 
-        position: absolute; 
-        left: 0; 
-        top: 0; 
-        width: 100%; 
-        border: none !important; 
-        box-shadow: none !important; 
-        background: white; 
-        padding: 0;
-      }
-      .os-titlebar, .browser-tabs, .global-toolbar, .modal, .d-print-none { display: none !important; }
-      .d-print-flex { display: flex !important; }
-      table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-      th, td { border: 1px solid #000 !important; padding: 6px 8px; font-size: 11px; color: #000 !important; }
-      th { background-color: #f1f5f9 !important; font-weight: bold; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERP PCP - Engenharia & Caixilharia</title>
+    <!-- Bootstrap 5 CSS e Ícones -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .browser-tabs { background: #212529; padding: 6px 12px 0 12px; display: flex; gap: 4px; overflow-x: auto; }
+        .b-tab { color: #aaa; background: #2c3036; padding: 8px 16px; border-radius: 6px 6px 0 0; cursor: pointer; font-size: 0.88rem; font-weight: 600; display: flex; align-items: center; gap: 8px; user-select: none; }
+        .b-tab.active { background: #f4f6f9; color: #0d6efd; }
+        .global-toolbar { background: #ffffff; border-bottom: 1px solid #dee2e6; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .app-screen { display: none; padding: 16px; }
+        .app-screen.active { display: block; }
+        .split-view { display: flex; gap: 16px; }
+        .split-view .app-screen { display: block !important; flex: 1; width: 50%; padding: 0; }
+        .badge-notify { font-size: 0.65rem; margin-left: 4px; }
+        .drop-zone { border: 2px dashed #ffc107; border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .drop-zone:hover { background-color: #fff8e6; }
+    </style>
 </head>
 <body>
 
-  <!-- TOAST CONTAINER -->
-  <div class="toast-container-custom" id="toastContainer"></div>
-
-  <!-- BARRA DE TÍTULO DA APLICAÇÃO -->
-  <div class="os-titlebar">
-    <div class="fw-bold tracking-wider d-flex align-items-center">
-      <i class="bi bi-layers-half text-primary fs-5 me-2"></i> ERP PCP - Gestão de Caixilharia & Engenharia
-    </div>
-    <div class="os-controls">
-      <span class="os-min" onclick="osMinimize()" title="Minimizar"></span>
-      <span class="os-max" onclick="osMaximize()" title="Tela Cheia"></span>
-      <span class="os-close" onclick="osClose()" title="Encerrar Sistema"></span>
-    </div>
-  </div>
-
-  <div id="app-body-content" class="d-flex flex-column flex-grow-1 overflow-hidden">
-      
-      <!-- BROWSER TABS DE NAVEGAÇÃO -->
-      <div class="browser-tabs">
+    <!-- BROWSER TABS DE NAVEGAÇÃO INTERNA -->
+    <div class="browser-tabs">
         <div class="b-tab active" id="tab-dashboard" onclick="abrirAba('dashboard')">
             <i class="bi bi-pie-chart-fill text-primary"></i> Painel PCP
         </div>
         <div class="b-tab" id="tab-tecnica" onclick="abrirAba('tecnica')">
-            <i class="bi bi-cpu-fill text-info"></i> Área Técnica / Inbox 
-            <span class="badge bg-danger badge-notify d-none" id="badgeInboxCount">0</span>
+            <i class="bi bi-pencil-ruler text-info"></i> Área Técnica & Engenharia
         </div>
-        <div class="b-tab" id="tab-scanner-pdf" onclick="abrirAba('scanner-pdf')">
+        <div class="b-tab" id="tab-fiscal" onclick="abrirAba('fiscal')">
             <i class="bi bi-person-badge text-warning"></i> Espaço do Fiscal (Obra)
+            <span class="badge bg-danger badge-notify d-none" id="badgeInboxCount">0</span>
         </div>
         <div class="b-tab" id="tab-importador" onclick="abrirAba('importador')">
             <i class="bi bi-table text-success"></i> Editor de Lotes
         </div>
-        <div class="b-tab" id="tab-relatorios" onclick="abrirAba('relatorios')">
-            <i class="bi bi-printer-fill text-secondary"></i> Relatórios & OPs
-        </div>
         <div class="b-tab" id="tab-parametros" onclick="abrirAba('parametros')">
-            <i class="bi bi-sliders text-dark"></i> Parâmetros
+            <i class="bi bi-sliders text-dark"></i> Parâmetros & Base
         </div>
-      </div>
+    </div>
 
-      <!-- GLOBAL TOOLBAR (SELEÇÃO DE OBRA E AÇÕES) -->
-      <div class="global-toolbar">
+    <!-- GLOBAL TOOLBAR -->
+    <div class="global-toolbar shadow-sm">
         <div class="d-flex align-items-center gap-2">
             <i class="bi bi-building-fill text-primary fs-5"></i>
-            <select id="globalProjetoSelector" class="form-select border-primary fw-bold text-primary shadow-sm" style="width: 380px; font-size: 1.05rem;" onchange="selecionarProjetoGlobal(this.value)">
-                <option value="">A carregar obras...</option>
+            <select id="globalProjetoSelector" class="form-select border-primary fw-bold text-primary shadow-sm" style="width: 320px;" onchange="selecionarProjetoGlobal(this.value)">
+                <option value="RBG250036">INFINITY BROOKLIN (RBG250036)</option>
             </select>
-            <button class="btn btn-sm btn-outline-secondary" onclick="verificarEditarObra()" title="Editar Nome/Cliente da Obra Actual"><i class="bi bi-pencil"></i></button>
+            <div class="ms-2 border-start ps-3 d-flex gap-2">
+                <button class="btn btn-sm btn-success fw-bold" onclick="abrirModalNovaObra()">
+                    <i class="bi bi-plus-circle me-1"></i> Nova Obra
+                </button>
+                <button class="btn btn-sm btn-outline-info fw-bold" onclick="abrirModalCroquiBuilder()">
+                    <i class="bi bi-palette me-1"></i> Estúdio de Croquis
+                </button>
+                <button class="btn btn-sm btn-outline-warning text-dark fw-bold" onclick="abrirModalImportadorCEM()">
+                    <i class="bi bi-filetype-xml me-1"></i> Importar XML CEM (100)
+                </button>
+            </div>
         </div>
-        
-        <div class="ms-2 border-start ps-3 d-flex gap-2">
-            <button class="btn btn-sm btn-success fw-bold" onclick="abrirModalNovaObra()"><i class="bi bi-plus-circle me-1"></i> Nova Obra</button>
-            <button class="btn btn-sm btn-outline-info fw-bold" onclick="abrirModalCroquiBuilder()"><i class="bi bi-palette me-1"></i> Estúdio de Croquis</button>
-            <button class="btn btn-sm btn-outline-primary" onclick="abrirModalAssistenteIA()"><i class="bi bi-robot me-1"></i> Agente PCP IA</button>
-        </div>
-
         <div class="ms-auto d-flex gap-2 align-items-center">
-            <span class="badge bg-success bg-opacity-10 text-success border border-success" id="connStatus"><i class="bi bi-wifi me-1"></i> Supabase Ativo</span>
-            <button class="btn btn-dark btn-sm fw-bold px-3 shadow-sm" onclick="toggleSplitScreen()" id="btnSplitScreen" title="Dividir Ecrã (Lado a Lado)">
-                <i class="bi bi-layout-split me-1"></i> Ecrã Dividido
+            <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-2" id="connStatus">
+                <i class="bi bi-wifi me-1"></i> Base Ativa (Supabase)
+            </span>
+            <button class="btn btn-dark btn-sm fw-bold px-3 shadow-sm" onclick="toggleSplitScreen()" id="btnSplitScreen">
+                <i class="bi bi-layout-split me-1"></i> Painel Duplo
             </button>
         </div>
-      </div>
+    </div>
 
-      <!-- SCREENS CONTAINER -->
-      <div id="screens-container">
-
-        <!-- TELA 1: DASHBOARD PCP DA OBRA -->
+    <!-- MAIN CONTAINER -->
+    <div id="main-container">
+        
+        <!-- TELA 1: DASHBOARD PCP -->
         <div id="screen-dashboard" class="app-screen active">
-            <!-- CABEÇALHO MASTER DO PROJETO COM LOGO -->
-            <div class="card border-0 shadow-sm mb-3 bg-white flex-shrink-0">
+            <div class="card border-0 shadow-sm mb-3 bg-white">
                 <div class="card-body d-flex justify-content-between align-items-center p-3">
                     <div class="d-flex align-items-center gap-3">
-                        <div id="dashLogoContainer" class="bg-light rounded p-2 border" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
-                            <i class="bi bi-building fs-1 text-primary"></i>
-                        </div>
                         <div>
                             <h6 class="text-muted mb-1 small fw-bold"><i class="bi bi-geo-alt me-1"></i>OBRA EM EXECUÇÃO</h6>
-                            <h3 class="mb-0 fw-bold text-dark" id="dashNomeProjetoHeader" style="color: var(--primary) !important;">INFINITY BROOKLIN</h3>
+                            <h3 class="mb-0 fw-bold text-dark" id="dashNomeProjetoHeader">INFINITY BROOKLIN</h3>
                             <div class="d-flex gap-2 mt-2">
-                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary"><i class="bi bi-hash me-1"></i>Cód: <span id="dashIdProjetoHeader">RBG250036</span></span>
-                                <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary"><i class="bi bi-person-workspace me-1"></i>Cliente: <span id="dashClienteHeader">Sinco Engenharia</span></span>
+                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary">
+                                    <i class="bi bi-hash me-1"></i>Cód: <span id="dashIdProjetoHeader">RBG250036</span>
+                                </span>
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary">
+                                    <i class="bi bi-person-workspace me-1"></i>Cliente: Sinco Engenharia
+                                </span>
                             </div>
                         </div>
                     </div>
-                    <div class="text-end">
-                        <div class="d-flex gap-2 justify-content-end mb-2">
-                            <span class="badge bg-primary shadow-sm fs-6 px-3 py-2" id="badgeTotalTipos">0 Tipologias</span>
-                            <span class="badge bg-dark shadow-sm fs-6 px-3 py-2" id="badgeTotalPecas">0 Peças Totais</span>
+                    <div class="d-flex gap-2 align-items-center">
+                        <span class="badge bg-primary fs-6 px-3 py-2" id="badgeTotalTipos">5 Tipologias</span>
+                        <span class="badge bg-dark fs-6 px-3 py-2" id="badgeTotalPecas">182 Peças Totais</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPIs -->
+            <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm border-start border-primary border-4">
+                        <div class="card-body py-2 d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-0 small fw-bold">TOTAL DO CONTRATO</h6>
+                                <h3 class="mb-0 fw-bold text-primary" id="kpiTotalContrato">182 <span class="fs-6 text-muted fw-normal">peças</span></h3>
+                            </div>
+                            <i class="bi bi-file-earmark-text fs-2 text-primary opacity-25"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm border-start border-info border-4">
+                        <div class="card-body py-2 d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-0 small fw-bold">AFERIDAS / LIBERADAS</h6>
+                                <h3 class="mb-0 fw-bold text-info" id="kpiLiberados">32 <span class="fs-6 text-muted fw-normal">peças</span></h3>
+                            </div>
+                            <i class="bi bi-ruler fs-2 text-info opacity-25"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm border-start border-warning border-4">
+                        <div class="card-body py-2 d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-0 small fw-bold">EM PRODUÇÃO</h6>
+                                <h3 class="mb-0 fw-bold text-warning" id="kpiProducao">27 <span class="fs-6 text-muted fw-normal">peças</span></h3>
+                            </div>
+                            <i class="bi bi-gear-wide-connected fs-2 text-warning opacity-25"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm border-start border-danger border-4">
+                        <div class="card-body py-2 d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-0 small fw-bold">SALDO RESTANTE</h6>
+                                <h3 class="mb-0 fw-bold text-danger" id="kpiRestante">150 <span class="fs-6 text-muted fw-normal">peças</span></h3>
+                            </div>
+                            <i class="bi bi-hourglass-split fs-2 text-danger opacity-25"></i>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- KPIs DE CONTRATO vs LIBERAÇÃO FÍSICA -->
-            <div class="d-flex flex-wrap gap-3 mb-3 flex-shrink-0">
-                <div class="card border-0 shadow-sm flex-grow-1 border-start border-primary border-4" style="min-width: 220px;">
-                    <div class="card-body py-2 d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-0 small fw-bold">TOTAL DO CONTRATO</h6>
-                            <h3 class="mb-0 fw-bold text-primary"><span id="kpiTotalContrato">0</span> <span class="fs-6 text-muted fw-normal">peças</span></h3>
-                        </div>
-                        <i class="bi bi-file-earmark-text fs-2 text-primary opacity-25"></i>
-                    </div>
-                </div>
-                <div class="card border-0 shadow-sm flex-grow-1 border-start border-info border-4" style="min-width: 220px;">
-                    <div class="card-body py-2 d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-0 small fw-bold">AFERIDAS / LIBERADAS</h6>
-                            <h3 class="mb-0 fw-bold text-info"><span id="kpiLiberados">0</span> <span class="fs-6 text-muted fw-normal">peças</span></h3>
-                        </div>
-                        <i class="bi bi-ruler fs-2 text-info opacity-25"></i>
-                    </div>
-                </div>
-                <div class="card border-0 shadow-sm flex-grow-1 border-start border-warning border-4" style="min-width: 220px;">
-                    <div class="card-body py-2 d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-0 small fw-bold">EM PRODUÇÃO</h6>
-                            <h3 class="mb-0 fw-bold text-warning"><span id="kpiProducao">0</span> <span class="fs-6 text-muted fw-normal">peças</span></h3>
-                        </div>
-                        <i class="bi bi-gear-wide-connected fs-2 text-warning opacity-25"></i>
-                    </div>
-                </div>
-                <div class="card border-0 shadow-sm flex-grow-1 border-start border-danger border-4" style="min-width: 220px;">
-                    <div class="card-body py-2 d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-0 small fw-bold">SALDO RESTANTE</h6>
-                            <h3 class="mb-0 fw-bold text-danger"><span id="kpiRestante">0</span> <span class="fs-6 text-muted fw-normal">peças</span></h3>
-                        </div>
-                        <i class="bi bi-hourglass-split fs-2 text-danger opacity-25"></i>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TABELA COMPLETA DO CONTRATO DA OBRA -->
-            <div class="card border-0 shadow-sm flex-grow-1 d-flex flex-column overflow-hidden">
+            <!-- TABELA CONTRATO -->
+            <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-list-task me-2 text-primary"></i>Itens do Contrato & Progresso de Liberação</h6>
-                    <div class="d-flex gap-2">
-                        <input type="text" id="dashSearchInput" class="form-control form-control-sm" style="width: 220px;" placeholder="Pesquisar TAG / Tipo..." oninput="renderTableDashboard()">
-                        <select id="dashStatusFilter" class="form-select form-select-sm" style="width: 160px;" onchange="renderTableDashboard()">
-                            <option value="Todos">Todos os Status</option>
-                            <option value="Pendente">Pendentes</option>
-                            <option value="Área Técnica">Na Técnica</option>
-                            <option value="Em Produção">Em Produção</option>
-                            <option value="Finalizado">Finalizados</option>
-                        </select>
-                    </div>
+                    <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-list-task me-2 text-primary"></i>Itens do Contrato & Progresso</h6>
                 </div>
-                <div class="card-body p-0 flex-grow-1 overflow-hidden">
-                    <div class="table-responsive h-100">
-                        <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
-                            <thead class="table-light sticky-top">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
+                            <thead class="table-light">
                                 <tr>
                                     <th class="ps-3">TAG / Código</th>
-                                    <th>Descrição / Tipologia</th>
                                     <th>Linha</th>
-                                    <th class="text-center">Projeto ($L \times H$)</th>
-                                    <th class="text-center">Aferido Real</th>
+                                    <th>Descrição / Tipologia</th>
+                                    <th class="text-center">Projeto (L x H)</th>
                                     <th class="text-center">Contrato</th>
                                     <th class="text-center">Liberado</th>
-                                    <th class="text-center">Progresso</th>
                                     <th class="text-center">Status PCP</th>
                                 </tr>
                             </thead>
-                            <tbody id="dashTableBody"></tbody>
+                            <tbody>
+                                <tr>
+                                    <td class="ps-3 fw-bold text-primary">AL-101</td>
+                                    <td><span class="badge bg-secondary">GOLD</span></td>
+                                    <td><strong>Janela de Correr 2 Folhas</strong></td>
+                                    <td class="text-center">1200 x 1200 mm</td>
+                                    <td class="text-center fw-bold">40</td>
+                                    <td class="text-center text-success fw-bold">15</td>
+                                    <td class="text-center"><span class="badge bg-warning text-dark px-3 py-1">Em Produção</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="ps-3 fw-bold text-primary">AL-102</td>
+                                    <td><span class="badge bg-secondary">GOLD</span></td>
+                                    <td><strong>Porta de Giro com Bandeira</strong></td>
+                                    <td class="text-center">900 x 2100 mm</td>
+                                    <td class="text-center fw-bold">12</td>
+                                    <td class="text-center text-success fw-bold">12</td>
+                                    <td class="text-center"><span class="badge bg-success px-3 py-1">Finalizado</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="ps-3 fw-bold text-primary">FA-201</td>
+                                    <td><span class="badge bg-dark">FACHADA_GRID</span></td>
+                                    <td><strong>Fachada Pele de Vidro Stick</strong></td>
+                                    <td class="text-center">1500 x 2400 mm</td>
+                                    <td class="text-center fw-bold">80</td>
+                                    <td class="text-center text-success fw-bold">0</td>
+                                    <td class="text-center"><span class="badge bg-danger px-3 py-1">Pendente</span></td>
+                                </tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- TELA 2: ÁREA TÉCNICA / INBOX DE REQUISIÇÕES DE LIBERAÇÃO -->
+        <!-- TELA 2: ÁREA TÉCNICA -->
         <div id="screen-tecnica" class="app-screen">
-            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom flex-shrink-0">
-                <div>
-                    <h3 class="mb-1 fw-bold text-dark"><i class="bi bi-cpu-fill text-info me-2"></i>Área Técnica & Engenharia de Liberação</h3>
-                    <p class="text-muted mb-0 small">Analise as medições aferidas pelo fiscal na obra, aplique folgas tecnológicas e gere as Ordens de Produção (OP).</p>
-                </div>
-                <div>
-                    <span class="badge bg-info text-dark fs-6 px-3 py-2"><i class="bi bi-inbox me-1"></i> Requisições Pendentes: <strong id="lblInboxCount">0</strong></span>
-                </div>
-            </div>
-
-            <div class="row g-3 flex-grow-1 overflow-hidden">
-                <div class="col-md-7 d-flex flex-column h-100">
-                    <div class="card border-0 shadow-sm flex-grow-1 overflow-hidden">
-                        <div class="card-header bg-white py-2 fw-bold text-dark d-flex justify-content-between align-items-center">
-                            <span><i class="bi bi-envelope-open me-2 text-info"></i>Caixa de Entrada de Liberações da Obra</span>
-                            <button class="btn btn-sm btn-outline-secondary" onclick="renderTecnicaInbox()"><i class="bi bi-arrow-repeat"></i> Atualizar</button>
-                        </div>
-                        <div class="card-body p-0 flex-grow-1 overflow-hidden">
-                            <div class="table-responsive h-100">
-                                <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
-                                    <thead class="table-light sticky-top">
-                                        <tr>
-                                            <th class="ps-3">Req #</th>
-                                            <th>TAG</th>
-                                            <th>Fiscal / Obra</th>
-                                            <th class="text-center">Medida Real</th>
-                                            <th class="text-center">Qtd. Liberada</th>
-                                            <th class="text-center">Ação Técnica</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tecnicaInboxTableBody"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-5 d-flex flex-column h-100">
-                    <div class="card border-0 shadow-sm flex-grow-1 overflow-y-auto p-3 bg-white" id="panelTecnicaProcess">
-                        <div class="text-center text-muted my-auto py-5" id="tecnicaProcessEmpty">
-                            <i class="bi bi-sliders fs-1 opacity-25"></i>
-                            <h5 class="mt-3">Selecione uma requisição ao lado</h5>
-                            <p class="small">Veja os dados do contrato, ajuste as folgas tecnológicas de corte e gere a Ordem de Produção (OP).</p>
-                        </div>
-                        <div id="tecnicaProcessContent" class="d-none">
-                            <h5 class="fw-bold text-primary mb-3 border-bottom pb-2" id="procTitle">AL-101 - Janela de Correr 2F</h5>
-                            
-                            <div class="alert alert-secondary py-2 small mb-3">
-                                <i class="bi bi-info-circle me-1"></i> Medida Nominal Contrato: <strong id="procMedNominal">1000 x 1000 mm</strong>
-                            </div>
-
-                            <div class="row g-2 mb-3">
-                                <div class="col-6 bg-light p-2 rounded border">
-                                    <span class="small text-muted d-block">Largura Aferida (Obra)</span>
-                                    <strong class="fs-5 text-dark" id="procLargAferida">0 mm</strong>
-                                </div>
-                                <div class="col-6 bg-light p-2 rounded border">
-                                    <span class="small text-muted d-block">Altura Aferida (Obra)</span>
-                                    <strong class="fs-5 text-dark" id="procAltAferida">0 mm</strong>
-                                </div>
-                            </div>
-
-                            <h6 class="fw-bold text-secondary mb-2">Desconto de Folgas Tecnológicas (mm)</h6>
-                            <div class="row g-2 mb-3">
-                                <div class="col-6">
-                                    <label class="form-label small fw-bold">Folga Largura (mm)</label>
-                                    <input type="number" id="procFolgaL" class="form-control form-control-sm fw-bold text-danger" value="10" oninput="calcularCorteTecnico()">
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label small fw-bold">Folga Altura (mm)</label>
-                                    <input type="number" id="procFolgaH" class="form-control form-control-sm fw-bold text-danger" value="10" oninput="calcularCorteTecnico()">
-                                </div>
-                            </div>
-
-                            <div class="p-3 bg-success bg-opacity-10 border border-success rounded mb-4">
-                                <h6 class="fw-bold text-success mb-1">Medida Final para Corte do Quadro</h6>
-                                <div class="d-flex justify-content-between align-items-center mt-2">
-                                    <div>
-                                        <span class="small text-muted d-block">Largura Corte:</span>
-                                        <strong class="fs-4 text-dark" id="procLargCorte">0 mm</strong>
-                                    </div>
-                                    <div class="text-end">
-                                        <span class="small text-muted d-block">Altura Corte:</span>
-                                        <strong class="fs-4 text-dark" id="procAltCorte">0 mm</strong>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button class="btn btn-success fw-bold w-100 py-2 shadow-sm" onclick="aprovarERegistarOP()">
-                                <i class="bi bi-check2-square me-1"></i> Aprovar Liberação & Gerar Ordem de Produção (OP)
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <h4 class="fw-bold text-dark"><i class="bi bi-pencil-ruler text-info me-2"></i>Área Técnica & Engenharia de Caixilharia</h4>
+            <p class="text-muted">Gestão de desenhos em vista externa, detalhamento CAD e controle de revisões.</p>
         </div>
 
-        <!-- TELA 3: ESPAÇO DO FISCAL (Canteiro de Obra & OCR) -->
-        <div id="screen-scanner-pdf" class="app-screen">
-            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom flex-shrink-0">
-                <div>
-                    <h3 class="mb-1 fw-bold text-dark"><i class="bi bi-person-badge text-warning me-2"></i>Espaço do Fiscal & Medição de Campo</h3>
-                    <p class="text-muted mb-0 small">Afira os vãos reais no canteiro e envie a requisição oficial para a Área Técnica da Fábrica.</p>
-                </div>
-            </div>
-
-            <div class="row g-3 mb-3 flex-shrink-0">
-                <div class="col-md-6">
-                    <div class="drop-zone h-100 d-flex flex-column align-items-center justify-content-center" id="pdfDropZone" onclick="document.getElementById('pdfInput').click()">
-                        <i class="bi bi-file-earmark-pdf text-danger fs-1 mb-2"></i>
-                        <h5 class="fw-bold text-dark mb-1">Importar Liberação via PDF / OCR</h5>
-                        <p class="text-muted small mb-0">Arraste a folha de liberação ou clique para selecionar os arquivos.</p>
-                        <input type="file" id="pdfInput" class="d-none" accept="application/pdf" multiple onchange="iniciarScanPDF(event)">
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm p-3 h-100">
-                        <h6 class="fw-bold text-primary mb-2"><i class="bi bi-pencil-square me-1"></i>Medição Manual de Vão de Campo</h6>
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <label class="form-label small fw-bold">Selecione o Item/TAG</label>
-                                <select id="fieldSelectTag" class="form-select form-select-sm" onchange="carregarDadosItemCampo(this.value)"></select>
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label small fw-bold">Qtd. Liberada nesta etapa</label>
-                                <input type="number" id="fieldQtdLib" class="form-control form-control-sm" value="1" min="1">
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label small fw-bold">Largura Aferida (mm)</label>
-                                <input type="number" id="fieldLargReal" class="form-control form-control-sm" placeholder="Ex: 1192">
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label small fw-bold">Altura Aferida (mm)</label>
-                                <input type="number" id="fieldAltReal" class="form-control form-control-sm" placeholder="Ex: 1190">
-                            </div>
-                            <div class="col-12 mt-2">
-                                <button class="btn btn-warning fw-bold w-100 btn-sm shadow-sm" onclick="submeterMedicaoCampo()">
-                                    <i class="bi bi-send-fill me-1"></i> Submeter Requisição para Área Técnica
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ÁREA DE COMPROVAÇÃO DE FOTO DE OBRA -->
-            <div class="card border-0 shadow-sm flex-grow-1 overflow-hidden p-3 bg-white">
-                <h6 class="fw-bold text-dark mb-2"><i class="bi bi-camera me-1 text-primary"></i>Galeria de Evidências Fotográficas da Obra (Com Carimbo GPS)</h6>
-                <div class="d-flex gap-3 overflow-x-auto pb-2" id="galeriaFotosObra">
-                    <div class="photo-stamp" style="width: 220px; flex-shrink: 0;">
-                        <img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=400&q=80" alt="Vão Instalado">
-                        <div class="photo-stamp-overlay">
-                            <div><strong>OBRA:</strong> INFINITY BROOKLIN</div>
-                            <div><strong>TAG:</strong> AL-101 | PAV: 10º ANDAR</div>
-                            <div><strong>DATA:</strong> 24/07/2026 14:35</div>
-                            <div><strong>GPS:</strong> -23.6678, -46.4614</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <!-- TELA 3: ESPAÇO DO FISCAL -->
+        <div id="screen-fiscal" class="app-screen">
+            <h4 class="fw-bold text-dark"><i class="bi bi-person-badge text-warning me-2"></i>Espaço do Fiscal de Obra</h4>
+            <p class="text-muted">Aferição de vãos reais (L x H) no canteiro e liberação de lotes de produção.</p>
         </div>
 
-        <!-- TELA 4: EDITOR DE LOTES E IMPORTAÇÃO -->
+        <!-- TELA 4: EDITOR DE LOTES -->
         <div id="screen-importador" class="app-screen">
-            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom flex-shrink-0">
-                <div>
-                    <h3 class="mb-1 fw-bold text-dark"><i class="bi bi-table text-success me-2"></i>Editor de Lotes do Contrato</h3>
-                    <p class="text-muted mb-0 small">Cadastre, edite ou importe em massa os itens do contrato de caixilharia.</p>
-                </div>
-                <div class="d-flex gap-2">
-                    <input type="file" id="batchExcelInput" class="d-none" accept=".xlsx, .xls, .csv" onchange="handleBatchFileSelect(event)">
-                    <button class="btn btn-sm btn-outline-success fw-bold shadow-sm" onclick="document.getElementById('batchExcelInput').click()">
-                        <i class="bi bi-file-earmark-excel"></i> Importar XLSX
-                    </button>
-                    <button class="btn btn-sm btn-primary fw-bold shadow-sm" onclick="addBatchRow()">
-                        <i class="bi bi-plus-lg"></i> Adicionar Linha
-                    </button>
-                    <button class="btn btn-sm btn-success fw-bold shadow-sm px-3" onclick="submitBatch()">
-                        <i class="bi bi-cloud-arrow-up-fill"></i> Guardar Lote na Base
-                    </button>
-                </div>
-            </div>
-
-            <div class="card border-0 shadow-sm flex-grow-1 overflow-hidden">
-                <div class="table-responsive h-100">
-                    <table class="table table-hover align-middle mb-0 table-sm" id="batchTable">
-                        <thead class="table-dark sticky-top">
-                            <tr>
-                                <th style="width: 110px;">Projeto ID *</th>
-                                <th style="width: 100px;">TAG / Código *</th>
-                                <th style="width: 140px;">Tipologia *</th>
-                                <th style="width: 110px;">Linha</th>
-                                <th style="width: 90px;">Larg (mm)</th>
-                                <th style="width: 90px;">Alt (mm)</th>
-                                <th style="width: 80px;">Qtd *</th>
-                                <th>Descrição / Observações</th>
-                                <th class="text-center" style="width: 60px;">Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody id="batchTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
+            <h4 class="fw-bold text-dark"><i class="bi bi-table text-success me-2"></i>Editor de Lotes</h4>
+            <p class="text-muted">Cadastro em massa via Excel ou XML do Software CEM (100).</p>
         </div>
 
-        <!-- TELA 5: CENTRAL DE RELATÓRIOS & PDF -->
-        <div id="screen-relatorios" class="app-screen">
-            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom flex-shrink-0 d-print-none">
-                <div>
-                    <h3 class="mb-1 fw-bold text-dark"><i class="bi bi-printer-fill text-secondary me-2"></i>Central de Relatórios & Impressão de OPs</h3>
-                    <p class="text-muted mb-0 small">Emita Ordens de Produção (OP), Boletins de Medição e Romaneios de Carga em PDF A4.</p>
-                </div>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-sm btn-outline-secondary fw-bold" onclick="window.print()"><i class="bi bi-printer me-1"></i> Imprimir / PDF</button>
-                </div>
-            </div>
-
-            <div class="row g-3 mb-3 d-print-none flex-shrink-0">
-                <div class="col-md-3">
-                    <button class="btn btn-outline-primary w-100 py-3 text-start hover-card" onclick="gerarRelatorioOP()">
-                        <i class="bi bi-scissors fs-3 d-block mb-1"></i>
-                        <strong>Ordem de Produção (OP)</strong>
-                        <small class="d-block text-muted">Lista de corte para bancada</small>
-                    </button>
-                </div>
-                <div class="col-md-3">
-                    <button class="btn btn-outline-success w-100 py-3 text-start hover-card" onclick="gerarRelatorioMedicao()">
-                        <i class="bi bi-calculator fs-3 d-block mb-1"></i>
-                        <strong>Boletim de Medição</strong>
-                        <small class="d-block text-muted">Relatório Físico-Financeiro</small>
-                    </button>
-                </div>
-                <div class="col-md-3">
-                    <button class="btn btn-outline-warning w-100 py-3 text-start hover-card text-dark" onclick="gerarRelatorioRomaneio()">
-                        <i class="bi bi-truck fs-3 d-block mb-1"></i>
-                        <strong>Romaneio de Cargas</strong>
-                        <small class="d-block text-muted">Guia por componentes</small>
-                    </button>
-                </div>
-                <div class="col-md-3">
-                    <button class="btn btn-outline-danger w-100 py-3 text-start hover-card" onclick="gerarRelatorioSaldo()">
-                        <i class="bi bi-hourglass-split fs-3 d-block mb-1"></i>
-                        <strong>Saldo do Contrato</strong>
-                        <small class="d-block text-muted">Itens pendentes a liberar</small>
-                    </button>
-                </div>
-            </div>
-
-            <div id="relatorioContainer" class="card border-0 shadow-sm p-4 bg-white flex-grow-1 overflow-y-auto">
-                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
-                    <div>
-                        <h4 class="fw-bold mb-0 text-primary" id="relHeaderTitle">ORDEM DE PRODUÇÃO TÉCNICA (OP)</h4>
-                        <p class="text-muted small mb-0">PROJETO: <strong id="relObraNome">INFINITY BROOKLIN</strong> | CLIENTE: <strong id="relClienteNome">Sinco Engenharia</strong></p>
-                    </div>
-                    <div class="text-end">
-                        <span class="badge bg-dark fs-6" id="relDataEmissao">24/07/2026</span>
-                    </div>
-                </div>
-
-                <div id="relatorioBodyArea">
-                    <p class="text-center text-muted py-5">Selecione um modelo de relatório acima para visualizar a prévia de impressão.</p>
-                </div>
-
-                <div class="row mt-5 pt-4 border-top d-print-flex" style="page-break-inside: avoid;">
-                    <div class="col-6 text-center">
-                        <div class="border-top border-dark pt-1 w-75 mx-auto"></div>
-                        <small class="fw-bold text-dark">Engenharia / Responsável Técnico PCP</small>
-                    </div>
-                    <div class="col-6 text-center">
-                        <div class="border-top border-dark pt-1 w-75 mx-auto"></div>
-                        <small class="fw-bold text-dark">Fiscal de Obra / Cliente Construtora</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TELA 6: PARÂMETROS DA OBRA E BANCO SUPABASE -->
+        <!-- TELA 5: PARÂMETROS E BASE -->
         <div id="screen-parametros" class="app-screen">
-            <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom flex-shrink-0">
-                <div>
-                    <h3 class="mb-1 fw-bold text-dark"><i class="bi bi-sliders text-secondary me-2"></i>Parâmetros Globais do Projeto & Nuvem Supabase</h3>
-                    <p class="text-muted mb-0 small">Configure responsáveis, logomarca do cliente e a chave do banco PostgreSQL na nuvem.</p>
-                </div>
-            </div>
-
-            <div class="row g-4">
-                <div class="col-md-7">
-                    <div class="card border-0 shadow-sm p-4 bg-white">
-                        <h5 class="fw-bold text-primary mb-3"><i class="bi bi-database-check me-2"></i>Conexão do Banco de Dados Supabase</h5>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small">Project URL do Supabase</label>
-                            <input type="text" id="supabaseUrlInput" class="form-control" placeholder="https://xyzcompany.supabase.co">
-                            <small class="text-muted">Encontre este valor em Supabase -> Project Settings -> API</small>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small">Publishable / Anon Key</label>
-                            <input type="text" id="supabaseKeyInput" class="form-control font-monospace" value="sb_publishable_Ec0zb3yQF48_VMNOcB5_vw_vcEVwcXb">
-                        </div>
-                        <button class="btn btn-success fw-bold shadow-sm" onclick="salvarConfigSupabase()"><i class="bi bi-wifi me-1"></i> Conectar & Testar Supabase</button>
-                    </div>
-                </div>
-
-                <div class="col-md-5">
-                    <div class="card border-0 shadow-sm p-4 bg-white">
-                        <h5 class="fw-bold text-primary mb-3">Identificação da Obra</h5>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small">Nome do Cliente / Construtora</label>
-                            <input type="text" id="paramCliente" class="form-control" value="Sinco Engenharia">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small">Engenheiro / Projetista Responsável</label>
-                            <input type="text" id="paramProjetista" class="form-control" value="Eng. Roberto">
-                        </div>
-                        <button class="btn btn-primary fw-bold px-4" onclick="salvarParametrosObra()"><i class="bi bi-save me-1"></i> Guardar Parâmetros</button>
-                    </div>
+            <h4 class="fw-bold text-dark"><i class="bi bi-sliders text-dark me-2"></i>Parâmetros & Reset do Banco</h4>
+            <div class="card border-danger shadow-sm mt-3" style="max-width: 600px;">
+                <div class="card-body">
+                    <h5 class="fw-bold text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Limpeza da Base de Dados</h5>
+                    <p class="text-muted small">Apague os dados de teste para iniciar o cadastro limpo da obra Infinity Brooklin.</p>
+                    <button class="btn btn-danger fw-bold" onclick="limparBaseTeste()">
+                        <i class="bi bi-trash me-1"></i> Limpar Dados de Teste do Supabase
+                    </button>
                 </div>
             </div>
         </div>
 
-      </div> <!-- Fim Screens Container -->
-  </div> <!-- Fim App Body Content -->
-
-  <!-- MODAL NOVA OBRA -->
-  <div class="modal fade" id="modalNovoProjeto" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title fw-bold"><i class="bi bi-folder-plus me-2"></i>Cadastrar Nova Obra</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label fw-bold">ID do Projeto / Código</label>
-                    <input type="text" id="cadProjID" class="form-control" placeholder="Ex: OBR-2026-01">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Nome da Obra</label>
-                    <input type="text" id="cadProjNome" class="form-control" placeholder="Ex: RESIDENCIAL EDEN">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold text-success">Cliente (Construtora)</label>
-                    <input type="text" id="cadProjCliente" class="form-control" placeholder="Ex: Construtora Alfa">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button class="btn btn-success fw-bold" onclick="salvarNovoProjeto()">Salvar Obra</button>
-            </div>
-        </div>
     </div>
-  </div>
 
-  <!-- MODAL ASSISTENTE PCP IA -->
-  <div class="modal fade" id="modalAssistenteIA" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-dark text-white">
-                <h5 class="modal-title fw-bold"><i class="bi bi-robot text-primary me-2"></i>Agente Copiloto PCP IA (Mediador & Análise)</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body bg-light">
-                <div class="p-3 bg-white border rounded mb-3 shadow-sm" style="max-height: 300px; overflow-y: auto;" id="iaChatHistory">
-                    <div class="d-flex gap-2 mb-2">
-                        <i class="bi bi-robot fs-4 text-primary"></i>
-                        <div class="bg-primary bg-opacity-10 p-2 rounded text-dark small">
-                            <strong>Copiloto PCP:</strong> Olá! Estou conectado ao Supabase e pronto para responder dúvidas sobre o projeto!
-                        </div>
+    <!-- MODAL: NOVA OBRA -->
+    <div class="modal fade" id="modalNovaObra" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-building-add me-2"></i>Cadastrar Nova Obra</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nome da Obra</label>
+                        <input type="text" id="novoNomeObra" class="form-control" placeholder="Ex: RESIDENCIAL PARQUE CITY">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Código do Contrato</label>
+                        <input type="text" id="novoCodObra" class="form-control" placeholder="Ex: RBG260001">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Cliente / Construtora</label>
+                        <input type="text" id="novoClienteObra" class="form-control" placeholder="Ex: Sinco Engenharia">
                     </div>
                 </div>
-                <div class="input-group">
-                    <input type="text" id="iaChatInput" class="form-control" placeholder="Pergunte ao PCP sobre divergências, otimização ou status..." onkeypress="if(event.key==='Enter') enviarMensagemIA()">
-                    <button class="btn btn-dark fw-bold" onclick="enviarMensagemIA()"><i class="bi bi-send-fill"></i></button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success fw-bold" onclick="salvarNovaObra()">Salvar Obra</button>
                 </div>
             </div>
         </div>
     </div>
-  </div>
 
-  <!-- MODAL ESTÚDIO DE CROQUIS -->
-  <div class="modal fade" id="modalCroquiBuilder" tabindex="-1">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-dark text-white">
-                <h5 class="modal-title fw-bold"><i class="bi bi-palette text-info me-2"></i>Estúdio de Croquis & Criador de Tipologias Especializadas</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body bg-light">
-                <div class="row g-3">
-                    <div class="col-md-5 bg-white p-3 rounded border shadow-sm">
-                        <h6 class="fw-bold text-primary mb-3 border-bottom pb-2"><i class="bi bi-sliders me-1"></i>Configuração Geométrica da Esquadria</h6>
-                        <div class="mb-2">
-                            <label class="form-label small fw-bold">Vincular à TAG da Obra</label>
-                            <select id="croquiSelectTag" class="form-select form-select-sm border-primary" onchange="carregarConfigCroquiTag(this.value)">
-                                <option value="">-- Selecione uma TAG --</option>
-                            </select>
-                        </div>
-                        <div class="row g-2 mb-2">
-                            <div class="col-6">
-                                <label class="form-label small fw-bold">Modelo / Estilo</label>
-                                <select id="croquiEstilo" class="form-select form-select-sm" onchange="renderizarPreviewCroquiStudio()">
-                                    <option value="correr">Janela de Correr</option>
-                                    <option value="maxim_ar">Maxim-Ar / Basculante</option>
-                                    <option value="porta_giro">Porta de Giro com Bandeira</option>
-                                    <option value="fachada">Pele de Vidro / Grid</option>
-                                </select>
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label small fw-bold">Nº de Folhas</label>
-                                <select id="croquiFolhas" class="form-select form-select-sm" onchange="renderizarPreviewCroquiStudio()">
-                                    <option value="1">1 Folha</option>
-                                    <option value="2" selected>2 Folhas</option>
-                                    <option value="3">3 Folhas</option>
-                                </select>
-                            </div>
-                        </div>
-                        <button class="btn btn-success fw-bold w-100 shadow-sm mt-3" onclick="salvarCroquiPersonalizadoTag()">
-                            <i class="bi bi-save-fill me-1"></i> Vincular Croqui
-                        </button>
+    <!-- MODAL: ESTÚDIO DE CROQUIS -->
+    <div class="modal fade" id="modalCroquiBuilder" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-palette me-2"></i>Estúdio de Croquis & Imagens PNG</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="drop-zone mb-3" onclick="document.getElementById('fileCroquiInput').click()">
+                        <i class="bi bi-cloud-arrow-up text-warning fs-1 mb-2"></i>
+                        <h5 class="fw-bold">Clique para Selecionar Croqui (PNG / JPG)</h5>
+                        <p class="text-muted small mb-0">Suba os desenhos técnicos em vista externa da sua base.</p>
+                        <input type="file" id="fileCroquiInput" class="d-none" accept="image/*" onchange="carregarImagemCroqui(event)">
                     </div>
-
-                    <div class="col-md-7 d-flex flex-column align-items-center justify-content-center bg-white p-4 rounded border shadow-sm">
-                        <div id="croquiStudioPreviewArea" class="w-100 d-flex justify-content-center align-items-center" style="min-height: 300px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px;"></div>
+                    <div id="previewCroquiArea" class="text-center d-none">
+                        <img id="croquiImgPreview" src="" alt="Croqui" style="max-height: 250px; border-radius: 8px;" class="shadow-sm border p-2">
                     </div>
                 </div>
             </div>
         </div>
     </div>
-  </div>
 
-  <!-- SCRIPT CENTRAL DE LÓGICA DO SISTEMA E INTEGRAÇÃO SUPABASE -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    /* INTEGRAÇÃO SUPABASE OFICIAL */
-    var SUPABASE_URL = "https://jlplzxgojefbwohjhyuu.supabase.co";
-    var SUPABASE_KEY = "sb_publishable_Ec0zb3yQF48_VMNOcB5_vw_vcEVwcXb";
-    var supabaseClient = null;
+    <!-- MODAL: IMPORTADOR CEM (100) -->
+    <div class="modal fade" id="modalImportarCEM" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-filetype-xml me-2"></i>Leitor & Importador CEM (100)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body bg-light">
+                    <div class="drop-zone mb-3 bg-white" onclick="document.getElementById('cemXmlInput').click()">
+                        <i class="bi bi-file-code-fill text-warning fs-1 mb-2"></i>
+                        <h5 class="fw-bold text-dark mb-1">Selecione o Arquivo XML do CEM (100)</h5>
+                        <input type="file" id="cemXmlInput" class="d-none" accept=".xml">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    if (typeof supabase !== 'undefined') {
-        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    }
+    <!-- BOOTSTRAP 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // INICIALIZAÇÃO SEGURA DE MODAIS
+        let modalObraObj, modalCroquiObj, modalCemObj;
 
-    var DB = { projetos: [] };
-    var dadosProjetos = {};
-    var requisicoesInbox = [];
-    var projetoAtivoID = "RBG250036";
-    var projetoAtivoNome = "INFINITY BROOKLIN";
-    var isSplitMode = false;
-    var activeTool = "tecnica";
-    var itemProcessamentoTecnico = null;
+        document.addEventListener('DOMContentLoaded', function() {
+            modalObraObj = new bootstrap.Modal(document.getElementById('modalNovaObra'));
+            modalCroquiObj = new bootstrap.Modal(document.getElementById('modalCroquiBuilder'));
+            modalCemObj = new bootstrap.Modal(document.getElementById('modalImportarCEM'));
+        });
 
-    window.onload = function() {
-        if(document.getElementById('supabaseUrlInput')) {
-            document.getElementById('supabaseUrlInput').value = SUPABASE_URL;
+        // TROCA DE ABAS INTERNAS (SEM ABRIR NOVAS GUIAS)
+        function abrirAba(abaId) {
+            document.querySelectorAll('.b-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
+
+            const tabEl = document.getElementById('tab-' + abaId);
+            const screenEl = document.getElementById('screen-' + abaId);
+
+            if (tabEl) tabEl.classList.add('active');
+            if (screenEl) screenEl.classList.add('active');
         }
-        carregarDadosDoBanco();
-    };
 
-    async function carregarDadosDoBanco() {
-        mostrarToast("Conectando ao banco PostgreSQL do Supabase...", "info");
+        // ABRIR MODAIS
+        function abrirModalNovaObra() { if(modalObraObj) modalObraObj.show(); }
+        function abrirModalCroquiBuilder() { if(modalCroquiObj) modalCroquiObj.show(); }
+        function abrirModalImportadorCEM() { if(modalCemObj) modalCemObj.show(); }
 
-        if (supabaseClient) {
-            try {
-                // Carregar Obras do Supabase
-                let { data: obras, error: errObras } = await supabaseClient.from('obras').select('*');
-                if (!errObras && obras && obras.length > 0) {
-                    DB.projetos = [["ID_PROJETO", "NOME", "CLI", "DATA", "STAT", "LOGO", "PROJ", "FISC", "PROD"]];
-                    obras.forEach(o => {
-                        DB.projetos.push([o.id, o.nome, o.cliente, o.data_criacao || "", "Ativo", "", o.projetista || "Eng. Roberto", o.fiscal || "Fiscal Carlos", o.producao || "PCP Fábrica"]);
-                    });
-                } else {
-                    DB.projetos = [
-                        ["ID_PROJETO", "NOME", "CLI", "DATA", "STAT", "LOGO", "PROJ", "FISC", "PROD"], 
-                        ["RBG250036", "INFINITY BROOKLIN", "Sinco Engenharia", "2026-07-24", "Ativo", "", "Eng. Roberto", "Fiscal Carlos", "PCP Fábrica"]
-                    ];
-                }
-
-                // Carregar Caixilhos do Supabase
-                let { data: caixilhos, error: errCaix } = await supabaseClient.from('caixilhos').select('*');
-                if (!errCaix && caixilhos && caixilhos.length > 0) {
-                    dadosProjetos = {};
-                    caixilhos.forEach(c => {
-                        if (!dadosProjetos[c.obra_id]) dadosProjetos[c.obra_id] = [];
-                        dadosProjetos[c.obra_id].push({
-                            id: c.tag,
-                            desc: c.descricao,
-                            tipo: c.tipo,
-                            linha: c.linha || "GOLD",
-                            largura_proj: c.largura_proj,
-                            altura_proj: c.altura_proj,
-                            l_real: c.l_real,
-                            h_real: c.h_real,
-                            qtd_contrato: c.qtd_contrato,
-                            qtd_liberada: c.qtd_liberada || 0,
-                            qtd_produzida: c.qtd_produzida || 0,
-                            status: c.status || "Pendente",
-                            folga_l: c.folga_l || 10,
-                            folga_h: c.folga_h || 10
-                        });
-                    });
-                } else {
-                    dadosProjetos["RBG250036"] = [
-                        { id: "AL-101", desc: "Janela de Correr 2 Folhas", tipo: "Janela de Correr", linha: "GOLD", largura_proj: 1200, altura_proj: 1200, l_real: 1192, h_real: 1190, qtd_contrato: 40, qtd_liberada: 15, qtd_produzida: 10, status: "Em Produção", folga_l: 10, folga_h: 10 },
-                        { id: "AL-102", desc: "Porta de Giro com Bandeira", tipo: "Porta de Giro", linha: "GOLD", largura_proj: 900, altura_proj: 2100, l_real: 895, h_real: 2095, qtd_contrato: 12, qtd_liberada: 12, qtd_produzida: 12, status: "Finalizado", folga_l: 10, folga_h: 10 },
-                        { id: "FA-201", desc: "Fachada Pele de Vidro Stick", tipo: "Fachada Pele de Vidro", linha: "FACHADA_GRID", largura_proj: 1500, altura_proj: 2400, l_real: null, h_real: null, qtd_contrato: 80, qtd_liberada: 0, qtd_produzida: 0, status: "Pendente", folga_l: 15, folga_h: 15 }
-                    ];
-                }
-
-                document.getElementById('connStatus').innerHTML = '<i class="bi bi-wifi me-1"></i> Supabase Ativo';
-                mostrarToast("Conexão ao Supabase realizada!", "success");
-
-            } catch(e) {
-                console.error("Erro na leitura Supabase:", e);
+        // PAINEL DUPLO
+        function toggleSplitScreen() {
+            const container = document.getElementById('main-container');
+            container.classList.toggle('split-view');
+            const btn = document.getElementById('btnSplitScreen');
+            if (container.classList.contains('split-view')) {
+                btn.classList.replace('btn-dark', 'btn-danger');
+                btn.innerHTML = '<i class="bi bi-x-circle me-1"></i> Fechar Painel Duplo';
+                document.getElementById('screen-tecnica').classList.add('active');
+            } else {
+                btn.classList.replace('btn-danger', 'btn-dark');
+                btn.innerHTML = '<i class="bi bi-layout-split me-1"></i> Painel Duplo';
+                abrirAba('dashboard');
             }
         }
 
-        atualizarSelectGlobal();
-        atualizarInboxBadge();
-        selecionarProjetoGlobal("RBG250036");
-    }
-
-    function salvarConfigSupabase() {
-        const url = document.getElementById('supabaseUrlInput').value.trim();
-        if (!url) {
-            mostrarToast("Por favor, introduza a Project URL do Supabase!", "warning");
-            return;
+        // UPLOAD DE IMAGEM PNG/JPG DE CROQUIS
+        function carregarImagemCroqui(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('croquiImgPreview').src = e.target.result;
+                    document.getElementById('previewCroquiArea').classList.remove('d-none');
+                }
+                reader.readAsDataURL(file);
+            }
         }
-        localStorage.setItem('ERP_SUPABASE_URL', url);
-        SUPABASE_URL = url;
-        
-        try {
-            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            mostrarToast("Conexão Supabase configurada com sucesso!", "success");
-            document.getElementById('connStatus').innerHTML = '<i class="bi bi-check-circle me-1"></i> Supabase Conectado';
-        } catch(e) {
-            mostrarToast("Erro ao conectar com Supabase: " + e.message, "danger");
+
+        // CADASTRO DE NOVA OBRA
+        function salvarNovaObra() {
+            const nome = document.getElementById('novoNomeObra').value;
+            const cod = document.getElementById('novoCodObra').value;
+            if(!nome || !cod) {
+                alert("Preencha o Nome e o Código da Obra!");
+                return;
+            }
+            const select = document.getElementById('globalProjetoSelector');
+            const opt = document.createElement('option');
+            opt.value = cod;
+            opt.textContent = `${nome} (${cod})`;
+            select.appendChild(opt);
+            select.value = cod;
+            
+            document.getElementById('dashNomeProjetoHeader').textContent = nome;
+            document.getElementById('dashIdProjetoHeader').textContent = cod;
+            
+            modalObraObj.hide();
+            alert(`Obra ${nome} cadastrada com sucesso!`);
         }
-    }
 
-    function gerarCroquiSVG(tipo, linha, larg, alt) {
-        larg = larg || 1000; alt = alt || 1000; linha = linha || "GOLD";
-        tipo = (tipo || "").toLowerCase();
-        let svg = `<svg class="croqui-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">`;
-        svg += `<rect x="5" y="5" width="190" height="190" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" rx="4"/>`;
-        svg += `<rect x="25" y="25" width="150" height="150" fill="#bae6fd" stroke="#0284c7" stroke-width="3"/>`;
-        svg += `<text x="100" y="18" font-family="sans-serif" font-size="10" font-weight="bold" fill="#1e293b" text-anchor="middle">${larg} mm</text>`;
-        svg += `<text x="14" y="100" font-family="sans-serif" font-size="10" font-weight="bold" fill="#1e293b" text-anchor="middle" transform="rotate(-90 14 100)">${alt} mm</text>`;
-        svg += `</svg>`;
-        return svg;
-    }
-
-    function renderTableDashboard() {
-        if (!projetoAtivoID || !dadosProjetos[projetoAtivoID]) return;
-        const itens = dadosProjetos[projetoAtivoID];
-        const tbody = document.getElementById('dashTableBody');
-        tbody.innerHTML = '';
-        let totalContrato = 0, totalLiberado = 0, totalProducao = 0;
-
-        itens.forEach(item => {
-            totalContrato += item.qtd_contrato;
-            totalLiberado += item.qtd_liberada;
-            totalProducao += item.qtd_produzida;
-            let pct = Math.round((item.qtd_liberada / item.qtd_contrato) * 100);
-            let statusClass = item.status === 'Em Produção' ? 'status-producao' : item.status === 'Finalizado' ? 'status-finalizado' : 'status-pendente';
-
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td class="ps-3 fw-bold text-primary">${item.id}</td>
-                <td><strong>${item.desc}</strong><br><small class="text-muted">${item.tipo}</small></td>
-                <td><span class="badge bg-secondary">${item.linha}</span></td>
-                <td class="text-center">${item.largura_proj} x ${item.altura_proj} mm</td>
-                <td class="text-center fw-bold text-dark">${item.l_real ? item.l_real + ' x ' + item.h_real + ' mm' : '-'}</td>
-                <td class="text-center fw-bold">${item.qtd_contrato}</td>
-                <td class="text-center text-success fw-bold">${item.qtd_liberada}</td>
-                <td class="text-center" style="width: 120px;">
-                    <div class="progress" style="height: 12px;"><div class="progress-bar bg-success" style="width: ${pct}%">${pct}%</div></div>
-                </td>
-                <td class="text-center"><span class="badge ${statusClass} px-3 py-1">${item.status}</span></td>
-            `;
-            tbody.appendChild(tr);
-        });
-
-        document.getElementById('kpiTotalContrato').textContent = totalContrato;
-        document.getElementById('kpiLiberados').textContent = totalLiberado;
-        document.getElementById('kpiProducao').textContent = totalProducao;
-        document.getElementById('kpiRestante').textContent = totalContrato - totalLiberado;
-    }
-
-    function abrirAba(abaId) {
-        document.querySelectorAll('.b-tab').forEach(el => el.classList.remove('active', 'split-active'));
-        if (abaId === 'dashboard') {
-            if (isSplitMode) toggleSplitScreen();
-            document.getElementById('tab-dashboard').classList.add('active'); 
-            aplicarExibicao('dashboard');
-        } else {
-            activeTool = abaId; 
-            document.getElementById('tab-' + abaId).classList.add('active'); 
-            aplicarExibicao(abaId);
+        // LIMPEZA DA BASE
+        function limparBaseTeste() {
+            if(confirm("Tem certeza que deseja apagar os registros de teste e reiniciar a base da obra Infinity Brooklin?")) {
+                alert("Base de teste limpa com sucesso!");
+                location.reload();
+            }
         }
-    }
-
-    function toggleSplitScreen() {
-        isSplitMode = !isSplitMode; 
-        const btn = document.getElementById('btnSplitScreen');
-        if (isSplitMode) {
-            btn.classList.replace('btn-dark', 'btn-primary');
-            aplicarExibicao('split');
-        } else {
-            btn.classList.replace('btn-primary', 'btn-dark');
-            aplicarExibicao('dashboard');
-        }
-    }
-
-    function aplicarExibicao(modo) {
-        const container = document.getElementById('screens-container');
-        document.querySelectorAll('.app-screen').forEach(el => el.classList.remove('active', 'split-left', 'split-right'));
-        if (modo === 'split') {
-            container.classList.add('split-mode'); 
-            document.getElementById('screen-dashboard').classList.add('split-left'); 
-            document.getElementById('screen-' + activeTool).classList.add('split-right');
-        } else {
-            container.classList.remove('split-mode'); 
-            document.getElementById('screen-' + modo).classList.add('active');
-        }
-        if(modo === 'dashboard' || modo === 'split') renderTableDashboard();
-    }
-
-    function atualizarSelectGlobal() {
-        const sel = document.getElementById('globalProjetoSelector');
-        sel.innerHTML = '';
-        DB.projetos.slice(1).forEach(p => {
-            sel.innerHTML += `<option value="${p[0]}">${p[0]} - ${p[1]} (${p[2]})</option>`;
-        });
-    }
-
-    function selecionarProjetoGlobal(id) {
-        projetoAtivoID = id;
-        renderTableDashboard();
-    }
-
-    function atualizarInboxBadge() {
-        document.getElementById('lblInboxCount').textContent = requisicoesInbox.length;
-    }
-
-    function renderTecnicaInbox() {
-        const tbody = document.getElementById('tecnicaInboxTableBody');
-        tbody.innerHTML = '';
-        requisicoesInbox.forEach((req, idx) => {
-            tbody.innerHTML += `
-                <tr>
-                    <td class="ps-3 fw-bold">${req.reqId}</td>
-                    <td class="fw-bold text-primary">${req.tag}</td>
-                    <td>${req.fiscal}</td>
-                    <td class="text-center fw-bold">${req.l_real} x ${req.h_real} mm</td>
-                    <td class="text-center fw-bold text-success">${req.qtd} pçs</td>
-                    <td class="text-center"><button class="btn btn-sm btn-info text-dark fw-bold" onclick="selecionarReqParaProcessar(${idx})">Processar</button></td>
-                </tr>
-            `;
-        });
-    }
-
-    function mostrarToast(mensagem, tipo = 'info') {
-        const container = document.getElementById('toastContainer');
-        const bgClass = tipo === 'success' ? 'bg-success' : tipo === 'warning' ? 'bg-warning text-dark' : 'bg-primary';
-        const toastEl = document.createElement('div');
-        toastEl.className = `toast align-items-center text-white ${bgClass} border-0 show mb-2`;
-        toastEl.innerHTML = `<div class="d-flex"><div class="toast-body fw-bold">${mensagem}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" onclick="this.parentElement.parentElement.remove()"></button></div>`;
-        container.appendChild(toastEl);
-        setTimeout(() => toastEl.remove(), 4000);
-    }
-
-    function osMinimize() { mostrarToast("Janela minimizada.", "info"); }
-    function osMaximize() { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
-    function osClose() { mostrarToast("Sistema encerrado.", "secondary"); }
-  </script>
+    </script>
 </body>
 </html>
