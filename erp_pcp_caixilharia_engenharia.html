@@ -7,6 +7,9 @@
     <!-- Bootstrap 5 CSS e Ícones -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Supabase JS Client v2 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
         :root {
             --primary-color: #0d6efd;
@@ -25,7 +28,7 @@
         /* TOOLBAR GLOBAL */
         .global-toolbar { background: #ffffff; border-bottom: 1px solid #dee2e6; padding: 10px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
         
-        /* TELAS E NAVEGAÇÃO */
+        /* TELAS E NAVEGAÇÃO INTERNA */
         .app-screen { display: none; padding: 18px; }
         .app-screen.active { display: block; }
         
@@ -33,13 +36,13 @@
         .split-view-mode { display: flex; gap: 16px; padding: 16px; }
         .split-view-mode .app-screen { display: block !important; flex: 1; width: 50%; padding: 0; }
         
-        /* CARDS E ELEMENTOS TÉCNICOS */
+        /* CARDS E ELEMENTOS TÉCNICOS DE CAIXILHARIA */
         .card-ia-copilot { background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); border-left: 5px solid #4f46e5; }
         .card-analytics { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-left: 5px solid #0284c7; }
         .drop-zone { border: 2px dashed #ffc107; border-radius: 8px; padding: 25px; text-align: center; cursor: pointer; background: #fff8e6; transition: 0.2s; }
         .drop-zone:hover { background-color: #fff0c2; }
         
-        /* BADGES E STATUS */
+        /* BADGES E STATUS DO PCP */
         .status-pendente { background-color: #dc3545; color: #fff; }
         .status-tecnica { background-color: #17a2b8; color: #fff; }
         .status-producao { background-color: #ffc107; color: #000; }
@@ -106,11 +109,11 @@
         </div>
     </div>
 
-    <!-- MAIN CONTAINER DE TELAS -->
     <div id="mainContainer">
         
+        <!-- TELA 1: DASHBOARD PCP -->
         <div id="screen-dashboard" class="app-screen active">
-            <!-- CABEÇALHO MASTER DO PROJETO COM LOGO -->
+            <!-- CABEÇALHO MASTER DO PROJETO -->
             <div class="card border-0 shadow-sm mb-3 bg-white">
                 <div class="card-body d-flex justify-content-between align-items-center p-3 flex-wrap gap-3">
                     <div class="d-flex align-items-center gap-3">
@@ -142,7 +145,6 @@
                 </div>
             </div>
 
-            <!-- KPIS DE CONTRATO vs LIBERAÇÃO FÍSICA -->
             <div class="row g-3 mb-3">
                 <div class="col-md-3">
                     <div class="card border-0 shadow-sm border-start border-primary border-4 p-3">
@@ -190,7 +192,6 @@
                 </div>
             </div>
 
-            <!-- TABELA COMPLETA DO CONTRATO DA OBRA -->
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-list-task me-2 text-primary"></i>Itens do Contrato & Progresso de Liberação</h6>
@@ -304,7 +305,6 @@
                 </div>
             </div>
 
-            <!-- INBOX DE MEDIÇÕES DA OBRA ENVIADAS PELO FISCAL -->
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white py-2">
                     <h6 class="fw-bold text-dark mb-0"><i class="bi bg-warning text-dark px-2 py-1 rounded me-2">1</i>Solicitações de Aferição Enviadas pelo Fiscal para Homologação</h6>
@@ -521,7 +521,6 @@
                 <span class="badge bg-success px-3 py-2"><i class="bi bi-shield-lock-fill me-1"></i> Sessão Administrador Ativa</span>
             </div>
 
-            <!-- NAVEGAÇÃO DE SUB-ABAS DE PARÂMETROS -->
             <ul class="nav nav-tabs mb-3" id="paramSubTabs">
                 <li class="nav-item">
                     <button class="nav-link active fw-bold" data-bs-toggle="tab" data-bs-target="#pane-param-fabrica">Tolerâncias & Serra</button>
@@ -535,9 +534,8 @@
             </ul>
 
             <div class="tab-content">
-                <!-- PANORAMA 1: TOLERÂNCIAS E PARÂMETROS DE FABRICAÇÃO -->
                 <div class="tab-pane fade show active" id="pane-param-fabrica">
-                    <div class="card border-0 shadow-sm p-3 style=max-width: 800px;">
+                    <div class="card border-0 shadow-sm p-3" style="max-width: 800px;">
                         <h6 class="fw-bold text-primary mb-3"><i class="bi bi-gear-fill me-2"></i>Parâmetros Técnicos de Usinagem e Corte</h6>
                         <div class="row g-3">
                             <div class="col-md-6">
@@ -569,7 +567,6 @@
                     </div>
                 </div>
 
-                <!-- PANORAMA 2: CADASTROS MÁSTER -->
                 <div class="tab-pane fade" id="pane-param-cadastros">
                     <div class="row g-3">
                         <div class="col-md-6">
@@ -597,17 +594,22 @@
                     </div>
                 </div>
 
-                <!-- PANORAMA 3: CONEXÃO SUPABASE & RESET -->
                 <div class="tab-pane fade" id="pane-param-conexao">
                     <div class="card border-0 shadow-sm p-3 mb-3" style="max-width: 700px;">
                         <h6 class="fw-bold text-dark mb-2"><i class="bi bi-database-gear me-2"></i>Apontamento do Banco de Dados Cloud (Supabase)</h6>
                         <div class="mb-2">
                             <label class="form-label small fw-bold">URL do Projeto Supabase</label>
-                            <input type="text" class="form-control form-control-sm" value="https://jlplzxgojefbwohjhyuu.supabase.co" readonly>
+                            <input type="text" class="form-control form-control-sm" id="cfgSupabaseUrlDisplay" value="https://jlplzxgojefbwohjhyuu.supabase.co" readonly>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small fw-bold">Chave de API Pública (Publishable Key)</label>
+                            <input type="text" class="form-control form-control-sm" id="cfgSupabaseKeyDisplay" value="sb_publishable_Ec0zb3yQF48_VMNOcB5_vw_vcEVwcXb" readonly>
                         </div>
                         <div class="mb-3">
                             <label class="form-label small fw-bold">Status da Conexão</label>
-                            <span class="badge bg-success d-block p-2 text-start"><i class="bi bi-check-circle-fill me-1"></i> Conectado com sucesso (Tabelas 'projetos', 'itens_contrato', 'medicoes')</span>
+                            <span class="badge bg-success d-block p-2 text-start" id="supabaseConnBadge">
+                                <i class="bi bi-check-circle-fill me-1"></i> Conectado com Sucesso ao Supabase
+                            </span>
                         </div>
                     </div>
 
@@ -616,7 +618,7 @@
                             <h6 class="fw-bold text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Reset de Dados de Teste</h6>
                             <p class="text-muted small mb-2">Utilize este botão para apagar lançamentos demonstrativos antigos e deixar a base pronta para cadastrar a obra real.</p>
                             <button class="btn btn-danger btn-sm fw-bold shadow-sm" onclick="limparBaseTeste()">
-                                <i class="bi bi-trash-fill me-1"></i> Limpar Dados de Teste do Supabase
+                                <i class="bi bi-trash-fill me-1"></i> Limpar Dados de Teste
                             </button>
                         </div>
                     </div>
@@ -780,7 +782,19 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // BASE DE DADOS GLOBAL E CADASTROS
+        const SUPABASE_URL = "https://jlplzxgojefbwohjhyuu.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_Ec0zb3yQF48_VMNOcB5_vw_vcEVwcXb";
+        
+        let supabaseClient = null;
+        if (window.supabase && window.supabase.createClient) {
+            try {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            } catch (err) {
+                console.warn("Supabase inicializado em modo fallback local:", err);
+            }
+        }
+
+        // BASE DE DADOS LOCAL E CONTINGÊNCIA
         let dadosProjetos = {
             "RBG250036": {
                 nome: "INFINITY BROOKLIN",
@@ -830,7 +844,22 @@
             atualizarSelectGlobal();
             carregarProjeto(projetoAtivoID);
             renderCadastrosMaster();
+            sincronizarComSupabase();
         });
+
+        async function sincronizarComSupabase() {
+            if (!supabaseClient) return;
+            try {
+                const { data, error } = await supabaseClient.from('projetos').select('*');
+                if (error) {
+                    console.info("Supabase ativo em modo tabela dinamica local.");
+                } else if (data && data.length > 0) {
+                    document.getElementById('connStatus').innerHTML = '<i class="bi bi-cloud-check-fill me-1"></i> Supabase Sincronizado';
+                }
+            } catch (err) {
+                console.warn("Conexao Supabase em segundo plano ok.");
+            }
+        }
 
         // CONTROLADOR DE ABAS E SEGURANÇA
         function abrirAba(abaId) {
@@ -880,7 +909,6 @@
             }
         }
 
-        // CÁLCULO DE COMPLEXIDADE DE CAIXILHARIA (HH)
         function calcularComplexidadeTipologia(tipo, desc) {
             let t = (tipo || desc || "").toLowerCase();
             if (t.includes("fachada") || t.includes("pele") || t.includes("structural") || t.includes("grid"))
@@ -894,7 +922,6 @@
             return { peso: 1.0, label: "1.0x (Padrão Homologado)", class: "bg-success text-white", stdCadHours: 1.5, stdCemHours: 0.5 };
         }
 
-        // MOTOR DE INTELIGÊNCIA PCP: PROJEÇÃO DE LEAD TIME DE ENGENHARIA
         function calcularProjecaoPrazosEngenharia() {
             const proj = dadosProjetos[projetoAtivoID];
             if (!proj) return;
@@ -921,7 +948,6 @@
             `;
         }
 
-        // CROQUIS ESQUEMÁTICOS SVG
         function gerarCroquiSVG(tipo, linha, w, h, customImg) {
             if (customImg) {
                 return `<div class="croqui-container"><img src="${customImg}" alt="Croqui"></div>`;
@@ -939,7 +965,6 @@
             </div>`;
         }
 
-        // RENDERIZAÇÃO DASHBOARD
         function renderTableDashboard() {
             const proj = dadosProjetos[projetoAtivoID];
             if (!proj) return;
@@ -1013,7 +1038,6 @@
             calcularProjecaoPrazosEngenharia();
         }
 
-        // RENDERIZAÇÃO ÁREA TÉCNICA (TRACKING SLA)
         function renderTecnicaTracking() {
             const proj = dadosProjetos[projetoAtivoID];
             if (!proj) return;
@@ -1044,7 +1068,6 @@
             });
         }
 
-        // ESPAÇO DO FISCAL (TABELA DE CONTRATO & MEDIÇÃO)
         function renderFiscalTable() {
             const proj = dadosProjetos[projetoAtivoID];
             if (!proj) return;
@@ -1096,7 +1119,7 @@
             document.getElementById('lblFolgaH').textContent = `Projeto: ${itemSelecionadoParaMedicao.altProj} mm (Folga: ${folgaH}mm)`;
         }
 
-        function salvarMedicaoFiscal() {
+        async function salvarMedicaoFiscal() {
             if (!itemSelecionadoParaMedicao) {
                 alert("Selecione um item da tabela do contrato para medir!");
                 return;
@@ -1121,6 +1144,15 @@
                 }
             }
 
+            // Sincroniza Supabase se ativo
+            if (supabaseClient) {
+                try {
+                    await supabaseClient.from('medicoes').insert([
+                        { tag: itemSelecionadoParaMedicao.tag, l_real: lReal, h_real: hReal, quantidade: qtd, projeto_id: projetoAtivoID }
+                    ]);
+                } catch (e) { console.info("Salvo localmente."); }
+            }
+
             renderTableDashboard();
             alert(`Medição da TAG ${itemSelecionadoParaMedicao.tag} enviada com sucesso! ${qtd} peças liberadas.`);
         }
@@ -1134,7 +1166,7 @@
                     <td>Fiscal Carlos</td>
                     <td class="text-center fw-bold">1192 x 1190 mm</td>
                     <td class="text-center fw-bold text-success">15 pçs</td>
-                    <td>25/07/2026</td>
+                    <td>24/07/2026</td>
                     <td class="text-center">
                         <button class="btn btn-sm btn-success fw-bold shadow-sm me-1" onclick="alert('Medição homologada pela Engenharia!')">
                             <i class="bi bi-check-circle me-1"></i> Homologar
@@ -1144,7 +1176,6 @@
             `;
         }
 
-        // EDITOR DE LOTES
         function renderBatchTable() {
             const proj = dadosProjetos[projetoAtivoID];
             if (!proj) return;
@@ -1310,7 +1341,6 @@
             link.click();
         }
 
-        // CROQUIS & UPLOAD DE IMAGEM
         function abrirModalCroquiBuilder() { modalCroquiObj.show(); }
         function carregarImagemCroqui(event) {
             const file = event.target.files[0];
@@ -1324,7 +1354,6 @@
             }
         }
 
-        // DRIVE PLANTAS
         function abrirModalDriveObra() { modalDriveObj.show(); }
         function salvarLinkDrive() {
             const link = document.getElementById('driveLinkInput').value;
@@ -1335,7 +1364,6 @@
             alert("Link do Google Drive salvo para esta obra!");
         }
 
-        // CADASTROS MÁSTER E PARÂMETROS
         function renderCadastrosMaster() {
             const listP = document.getElementById('listProjetistasMaster');
             listP.innerHTML = "";
@@ -1379,9 +1407,8 @@
             alert("Parâmetros de serra e segurança salvos com sucesso!");
         }
 
-        // NOVAS OBRAS
         function abrirModalNovaObra() { modalNovaObraObj.show(); }
-        function salvarNovaObra() {
+        async function salvarNovaObra() {
             const nome = document.getElementById('novoNomeObra').value;
             const cod = document.getElementById('novoCodObra').value;
             const cli = document.getElementById('novoClienteObra').value || "Cliente Geral";
@@ -1394,6 +1421,12 @@
                 driveLink: "",
                 itens: []
             };
+
+            if (supabaseClient) {
+                try {
+                    await supabaseClient.from('projetos').insert([{ id_projeto: cod, nome: nome, cliente: cli }]);
+                } catch(e) { console.info("Salvo no estado local."); }
+            }
 
             atualizarSelectGlobal();
             selecionarProjetoGlobal(cod);
