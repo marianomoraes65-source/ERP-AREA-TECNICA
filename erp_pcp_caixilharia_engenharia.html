@@ -17,9 +17,9 @@
         .app-screen.active { display: block; }
         .split-view { display: flex; gap: 16px; }
         .split-view .app-screen { display: block !important; flex: 1; width: 50%; padding: 0; }
-        .badge-notify { font-size: 0.65rem; margin-left: 4px; }
-        .drop-zone { border: 2px dashed #ffc107; border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .drop-zone { border: 2px dashed #ffc107; border-radius: 8px; padding: 25px; text-align: center; cursor: pointer; transition: 0.2s; }
         .drop-zone:hover { background-color: #fff8e6; }
+        .card-ia-copilot { background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); border-left: 5px solid #4f46e5; }
     </style>
 </head>
 <body>
@@ -34,7 +34,7 @@
         </div>
         <div class="b-tab" id="tab-fiscal" onclick="abrirAba('fiscal')">
             <i class="bi bi-person-badge text-warning"></i> Espaço do Fiscal (Obra)
-            <span class="badge bg-danger badge-notify d-none" id="badgeInboxCount">0</span>
+            <span class="badge bg-danger ms-1" id="badgeInboxCount">1</span>
         </div>
         <div class="b-tab" id="tab-importador" onclick="abrirAba('importador')">
             <i class="bi bi-table text-success"></i> Editor de Lotes
@@ -48,7 +48,7 @@
     <div class="global-toolbar shadow-sm">
         <div class="d-flex align-items-center gap-2">
             <i class="bi bi-building-fill text-primary fs-5"></i>
-            <select id="globalProjetoSelector" class="form-select border-primary fw-bold text-primary shadow-sm" style="width: 320px;" onchange="selecionarProjetoGlobal(this.value)">
+            <select id="globalProjetoSelector" class="form-select border-primary fw-bold text-primary shadow-sm" style="width: 340px;" onchange="selecionarProjetoGlobal(this.value)">
                 <option value="RBG250036">INFINITY BROOKLIN (RBG250036)</option>
             </select>
             <div class="ms-2 border-start ps-3 d-flex gap-2">
@@ -64,7 +64,7 @@
             </div>
         </div>
         <div class="ms-auto d-flex gap-2 align-items-center">
-            <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-2" id="connStatus">
+            <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-2">
                 <i class="bi bi-wifi me-1"></i> Base Ativa (Supabase)
             </span>
             <button class="btn btn-dark btn-sm fw-bold px-3 shadow-sm" onclick="toggleSplitScreen()" id="btnSplitScreen">
@@ -80,121 +80,98 @@
         <div id="screen-dashboard" class="app-screen active">
             <div class="card border-0 shadow-sm mb-3 bg-white">
                 <div class="card-body d-flex justify-content-between align-items-center p-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <div>
-                            <h6 class="text-muted mb-1 small fw-bold"><i class="bi bi-geo-alt me-1"></i>OBRA EM EXECUÇÃO</h6>
-                            <h3 class="mb-0 fw-bold text-dark" id="dashNomeProjetoHeader">INFINITY BROOKLIN</h3>
-                            <div class="d-flex gap-2 mt-2">
-                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary">
-                                    <i class="bi bi-hash me-1"></i>Cód: <span id="dashIdProjetoHeader">RBG250036</span>
-                                </span>
-                                <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary">
-                                    <i class="bi bi-person-workspace me-1"></i>Cliente: Sinco Engenharia
-                                </span>
-                            </div>
+                    <div>
+                        <h6 class="text-muted mb-1 small fw-bold"><i class="bi bi-geo-alt me-1"></i>OBRA EM EXECUÇÃO</h6>
+                        <h3 class="mb-0 fw-bold text-dark" id="dashNomeProjetoHeader">INFINITY BROOKLIN</h3>
+                        <div class="d-flex gap-2 mt-2">
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary">Cód: <span id="dashIdProjetoHeader">RBG250036</span></span>
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary">Cliente: Sinco Engenharia</span>
                         </div>
                     </div>
-                    <div class="d-flex gap-2 align-items-center">
-                        <span class="badge bg-primary fs-6 px-3 py-2" id="badgeTotalTipos">5 Tipologias</span>
-                        <span class="badge bg-dark fs-6 px-3 py-2" id="badgeTotalPecas">182 Peças Totais</span>
+                    <div class="d-flex gap-2">
+                        <span class="badge bg-primary fs-6 px-3 py-2">5 Tipologias</span>
+                        <span class="badge bg-dark fs-6 px-3 py-2">182 Peças Totais</span>
                     </div>
                 </div>
             </div>
 
-            <!-- KPIs -->
             <div class="row g-3 mb-3">
                 <div class="col-md-3">
-                    <div class="card border-0 shadow-sm border-start border-primary border-4">
-                        <div class="card-body py-2 d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-muted mb-0 small fw-bold">TOTAL DO CONTRATO</h6>
-                                <h3 class="mb-0 fw-bold text-primary" id="kpiTotalContrato">182 <span class="fs-6 text-muted fw-normal">peças</span></h3>
-                            </div>
-                            <i class="bi bi-file-earmark-text fs-2 text-primary opacity-25"></i>
-                        </div>
+                    <div class="card border-0 shadow-sm border-start border-primary border-4 p-2">
+                        <small class="text-muted fw-bold">TOTAL CONTRATO</small>
+                        <h3 class="mb-0 fw-bold text-primary">182 <span class="fs-6 text-muted">peças</span></h3>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card border-0 shadow-sm border-start border-info border-4">
-                        <div class="card-body py-2 d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-muted mb-0 small fw-bold">AFERIDAS / LIBERADAS</h6>
-                                <h3 class="mb-0 fw-bold text-info" id="kpiLiberados">32 <span class="fs-6 text-muted fw-normal">peças</span></h3>
-                            </div>
-                            <i class="bi bi-ruler fs-2 text-info opacity-25"></i>
-                        </div>
+                    <div class="card border-0 shadow-sm border-start border-info border-4 p-2">
+                        <small class="text-muted fw-bold">LIBERADAS/AFERIDAS</small>
+                        <h3 class="mb-0 fw-bold text-info" id="kpiLiberadosCount">27 <span class="fs-6 text-muted">peças</span></h3>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card border-0 shadow-sm border-start border-warning border-4">
-                        <div class="card-body py-2 d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-muted mb-0 small fw-bold">EM PRODUÇÃO</h6>
-                                <h3 class="mb-0 fw-bold text-warning" id="kpiProducao">27 <span class="fs-6 text-muted fw-normal">peças</span></h3>
-                            </div>
-                            <i class="bi bi-gear-wide-connected fs-2 text-warning opacity-25"></i>
-                        </div>
+                    <div class="card border-0 shadow-sm border-start border-warning border-4 p-2">
+                        <small class="text-muted fw-bold">EM PRODUÇÃO</small>
+                        <h3 class="mb-0 fw-bold text-warning">27 <span class="fs-6 text-muted">peças</span></h3>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card border-0 shadow-sm border-start border-danger border-4">
-                        <div class="card-body py-2 d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-muted mb-0 small fw-bold">SALDO RESTANTE</h6>
-                                <h3 class="mb-0 fw-bold text-danger" id="kpiRestante">150 <span class="fs-6 text-muted fw-normal">peças</span></h3>
-                            </div>
-                            <i class="bi bi-hourglass-split fs-2 text-danger opacity-25"></i>
-                        </div>
+                    <div class="card border-0 shadow-sm border-start border-danger border-4 p-2">
+                        <small class="text-muted fw-bold">SALDO RESTANTE</small>
+                        <h3 class="mb-0 fw-bold text-danger">155 <span class="fs-6 text-muted">peças</span></h3>
                     </div>
                 </div>
             </div>
 
-            <!-- TABELA CONTRATO -->
+            <!-- TABELA RESUMO -->
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-list-task me-2 text-primary"></i>Itens do Contrato & Progresso</h6>
+                <div class="card-header bg-white py-2">
+                    <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-list-task me-2 text-primary"></i>Itens do Contrato & Progresso de Liberação</h6>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
                             <thead class="table-light">
                                 <tr>
-                                    <th class="ps-3">TAG / Código</th>
+                                    <th class="ps-3">TAG</th>
                                     <th>Linha</th>
-                                    <th>Descrição / Tipologia</th>
+                                    <th>Descrição</th>
                                     <th class="text-center">Projeto (L x H)</th>
+                                    <th class="text-center">Aferido Real</th>
                                     <th class="text-center">Contrato</th>
                                     <th class="text-center">Liberado</th>
-                                    <th class="text-center">Status PCP</th>
+                                    <th class="text-center">Status</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="dashTableBody">
                                 <tr>
                                     <td class="ps-3 fw-bold text-primary">AL-101</td>
                                     <td><span class="badge bg-secondary">GOLD</span></td>
-                                    <td><strong>Janela de Correr 2 Folhas</strong></td>
+                                    <td>Janela de Correr 2 Folhas</td>
                                     <td class="text-center">1200 x 1200 mm</td>
+                                    <td class="text-center fw-bold text-dark">1192 x 1190 mm</td>
                                     <td class="text-center fw-bold">40</td>
                                     <td class="text-center text-success fw-bold">15</td>
-                                    <td class="text-center"><span class="badge bg-warning text-dark px-3 py-1">Em Produção</span></td>
+                                    <td class="text-center"><span class="badge bg-warning text-dark">Em Produção</span></td>
                                 </tr>
                                 <tr>
                                     <td class="ps-3 fw-bold text-primary">AL-102</td>
                                     <td><span class="badge bg-secondary">GOLD</span></td>
-                                    <td><strong>Porta de Giro com Bandeira</strong></td>
+                                    <td>Porta de Giro com Bandeira</td>
                                     <td class="text-center">900 x 2100 mm</td>
+                                    <td class="text-center fw-bold text-dark">895 x 2095 mm</td>
                                     <td class="text-center fw-bold">12</td>
                                     <td class="text-center text-success fw-bold">12</td>
-                                    <td class="text-center"><span class="badge bg-success px-3 py-1">Finalizado</span></td>
+                                    <td class="text-center"><span class="badge bg-success">Finalizado</span></td>
                                 </tr>
                                 <tr>
                                     <td class="ps-3 fw-bold text-primary">FA-201</td>
                                     <td><span class="badge bg-dark">FACHADA_GRID</span></td>
-                                    <td><strong>Fachada Pele de Vidro Stick</strong></td>
+                                    <td>Fachada Pele de Vidro Stick</td>
                                     <td class="text-center">1500 x 2400 mm</td>
+                                    <td class="text-center">-</td>
                                     <td class="text-center fw-bold">80</td>
                                     <td class="text-center text-success fw-bold">0</td>
-                                    <td class="text-center"><span class="badge bg-danger px-3 py-1">Pendente</span></td>
+                                    <td class="text-center"><span class="badge bg-danger">Pendente</span></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -205,14 +182,156 @@
 
         <!-- TELA 2: ÁREA TÉCNICA -->
         <div id="screen-tecnica" class="app-screen">
-            <h4 class="fw-bold text-dark"><i class="bi bi-pencil-ruler text-info me-2"></i>Área Técnica & Engenharia de Caixilharia</h4>
-            <p class="text-muted">Gestão de desenhos em vista externa, detalhamento CAD e controle de revisões.</p>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold text-dark mb-0"><i class="bi bi-pencil-ruler text-info me-2"></i>Área Técnica & Detalhamento CAD</h4>
+                <span class="badge bg-dark px-3 py-2">Padrão Vista Externa</span>
+            </div>
+            <div class="card border-0 shadow-sm p-3 mb-3">
+                <h6 class="fw-bold text-primary mb-2"><i class="bi bi-folder-check me-2"></i>Diretrizes de Emissão de Listas & Detalhamentos (POP)</h6>
+                <div class="row g-2 small text-muted">
+                    <div class="col-md-6">
+                        <strong>LST (Interno):</strong> RBG25-0036-OP01_FACHADA_LST-CORTE_R00.pdf (Uso exclusivo fábrica)
+                    </div>
+                    <div class="col-md-6">
+                        <strong>ROM (Compras):</strong> RBG25-0036-OP01_FACHADA_ROM-VIDROS_R00.pdf (Envio fornecedor)
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- TELA 3: ESPAÇO DO FISCAL -->
+        <!-- TELA 3: ESPAÇO DO FISCAL (RESTAURADO COMPLETO) -->
         <div id="screen-fiscal" class="app-screen">
-            <h4 class="fw-bold text-dark"><i class="bi bi-person-badge text-warning me-2"></i>Espaço do Fiscal de Obra</h4>
-            <p class="text-muted">Aferição de vãos reais (L x H) no canteiro e liberação de lotes de produção.</p>
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                <div>
+                    <h3 class="fw-bold text-dark mb-0"><i class="bi bi-person-badge text-warning me-2"></i>Espaço do Fiscal de Obra</h3>
+                    <p class="text-muted mb-0 small">Aferição de vãos reais no canteiro, validação de contrato e liberação de lotes de produção.</p>
+                </div>
+                <button class="btn btn-outline-primary fw-bold btn-sm shadow-sm" onclick="abrirModalDriveObra()">
+                    <i class="bi bi-google me-1"></i> Plantas Baixas & Drive da Obra
+                </button>
+            </div>
+
+            <!-- ORIENTAÇÃO DO COPILOTO PCP IA -->
+            <div class="card card-ia-copilot p-3 mb-3 shadow-sm rounded-3">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="bg-indigo text-white p-2 rounded-circle bg-primary">
+                        <i class="bi bi-person-workspace fs-3 text-white"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-primary mb-1"><i class="bi bi-robot me-1"></i>Agente Copiloto PCP (Caixilharia)</h6>
+                        <p class="mb-1 text-dark small" id="iaFiscalAdvice">
+                            <strong>Atenção Fiscal:</strong> No item <strong>AL-101 (Janela de Correr 2 Folhas)</strong>, o contrato prevê <strong>40 peças</strong>. Você está liberando apenas 15 peças.
+                        </p>
+                        <small class="text-muted">
+                            💡 <em>Dica de Produção:</em> O fracionamento de lotes pequenos gera reajuste de gabarito e perda de retalhos na serra. Tente negociar com a engenharia do canteiro a liberação do lote completo de 40 peças.
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <!-- TABELA DO CONTRATO PARA MEDIÇÃO -->
+                <div class="col-lg-7">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center">
+                            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-file-earmark-text text-primary me-2"></i>Itens do Contrato para Medição</h6>
+                            <small class="text-muted">Clique em [Medir Vão] para preencher</small>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-3">TAG</th>
+                                            <th>Descrição / Linha</th>
+                                            <th class="text-center">Proj. (L x H)</th>
+                                            <th class="text-center">Contrato / Saldo</th>
+                                            <th class="text-center">Ação</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="fiscalContratoTableBody">
+                                        <tr>
+                                            <td class="ps-3 fw-bold text-primary">AL-101</td>
+                                            <td>Janela de Correr 2F<br><span class="badge bg-secondary">GOLD</span></td>
+                                            <td class="text-center">1200 x 1200</td>
+                                            <td class="text-center"><span class="fw-bold">40</span> / <span class="text-danger fw-bold">25 pend.</span></td>
+                                            <td class="text-center">
+                                                <button class="btn btn-sm btn-warning fw-bold px-2 py-1" onclick="medirVaoItem('AL-101', 'Janela de Correr 2 Folhas', 1200, 1200, 25)">
+                                                    <i class="bi bi-ruler me-1"></i> Medir Vão
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="ps-3 fw-bold text-primary">AL-103</td>
+                                            <td>Maxim-Ar Banheiro<br><span class="badge bg-secondary">SUPREMA</span></td>
+                                            <td class="text-center">600 x 600</td>
+                                            <td class="text-center"><span class="fw-bold">20</span> / <span class="text-danger fw-bold">15 pend.</span></td>
+                                            <td class="text-center">
+                                                <button class="btn btn-sm btn-warning fw-bold px-2 py-1" onclick="medirVaoItem('AL-103', 'Maxim-Ar Banheiro', 600, 600, 15)">
+                                                    <i class="bi bi-ruler me-1"></i> Medir Vão
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="ps-3 fw-bold text-primary">FA-201</td>
+                                            <td>Fachada Pele de Vidro<br><span class="badge bg-dark">FACHADA_GRID</span></td>
+                                            <td class="text-center">1500 x 2400</td>
+                                            <td class="text-center"><span class="fw-bold">80</span> / <span class="text-danger fw-bold">80 pend.</span></td>
+                                            <td class="text-center">
+                                                <button class="btn btn-sm btn-warning fw-bold px-2 py-1" onclick="medirVaoItem('FA-201', 'Fachada Pele de Vidro Stick', 1500, 2400, 80)">
+                                                    <i class="bi bi-ruler me-1"></i> Medir Vão
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FORMULÁRIO DE LIBERAÇÃO DE MEDIÇÃO -->
+                <div class="col-lg-5">
+                    <div class="card border-0 shadow-sm border-top border-warning border-4">
+                        <div class="card-header bg-white py-2">
+                            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-check-circle-fill text-success me-2"></i>Formulário de Liberação de Medição</h6>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold mb-1">TAG / Tipologia Selecionada</label>
+                                <input type="text" id="fiscalFormTag" class="form-control form-control-sm fw-bold text-primary" readonly placeholder="Selecione na tabela ao lado">
+                            </div>
+
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <label class="form-label small fw-bold mb-1">Largura Real (mm)</label>
+                                    <input type="number" id="fiscalFormLarguraReal" class="form-control form-control-sm border-warning fw-bold" placeholder="Ex: 1192" oninput="calcularFolgasFiscal()">
+                                    <small class="text-muted" id="lblFolgaL">Projeto: - mm</small>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small fw-bold mb-1">Altura Real (mm)</label>
+                                    <input type="number" id="fiscalFormAlturaReal" class="form-control form-control-sm border-warning fw-bold" placeholder="Ex: 1190" oninput="calcularFolgasFiscal()">
+                                    <small class="text-muted" id="lblFolgaH">Projeto: - mm</small>
+                                </div>
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold mb-1">Quantidade de Peças a Liberar</label>
+                                <input type="number" id="fiscalFormQtdLiberar" class="form-control form-control-sm fw-bold text-success" placeholder="Qtd peças para fabricar">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold mb-1">Observações do Fiscal / Localização</label>
+                                <textarea id="fiscalFormObs" class="form-control form-control-sm" rows="2" placeholder="Ex: Vãos conferidos no 4º pav - Bloco A"></textarea>
+                            </div>
+
+                            <button class="btn btn-success fw-bold w-100 shadow-sm" onclick="salvarMedicaoFiscal()">
+                                <i class="bi bi-send-fill me-1"></i> Confirmar & Enviar Medição para o PCP
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- TELA 4: EDITOR DE LOTES -->
@@ -221,7 +340,7 @@
             <p class="text-muted">Cadastro em massa via Excel ou XML do Software CEM (100).</p>
         </div>
 
-        <!-- TELA 5: PARÂMETROS E BASE -->
+        <!-- TELA 5: PARÂMETROS -->
         <div id="screen-parametros" class="app-screen">
             <h4 class="fw-bold text-dark"><i class="bi bi-sliders text-dark me-2"></i>Parâmetros & Reset do Banco</h4>
             <div class="card border-danger shadow-sm mt-3" style="max-width: 600px;">
@@ -237,7 +356,35 @@
 
     </div>
 
-    <!-- MODAL: NOVA OBRA -->
+    <!-- MODAL: GOOGLE DRIVE PLANTAS BAIXAS -->
+    <div class="modal fade" id="modalDriveObra" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-google me-2"></i>Plantas Baixas & Google Drive</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Link da Pasta do Google Drive / OneDrive da Obra</label>
+                        <input type="url" id="driveLinkInput" class="form-control" placeholder="https://drive.google.com/drive/folders/...">
+                    </div>
+                    <button class="btn btn-primary fw-bold w-100 mb-3" onclick="salvarLinkDrive()">
+                        <i class="bi bi-save me-1"></i> Salvar Link do Drive
+                    </button>
+                    <hr>
+                    <div id="driveLinkArea" class="d-none">
+                        <h6 class="fw-bold text-dark mb-1">Repositório Salvo:</h6>
+                        <a id="btnOpenDrive" href="#" target="_blank" class="btn btn-outline-success fw-bold w-100">
+                            <i class="bi bi-folder-symlink me-1"></i> Abrir Pasta de Plantas e DWGs no Google Drive
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS: NOVA OBRA, CROQUIS, CEM -->
     <div class="modal fade" id="modalNovaObra" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -254,54 +401,43 @@
                         <label class="form-label fw-bold">Código do Contrato</label>
                         <input type="text" id="novoCodObra" class="form-control" placeholder="Ex: RBG260001">
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Cliente / Construtora</label>
-                        <input type="text" id="novoClienteObra" class="form-control" placeholder="Ex: Sinco Engenharia">
-                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-success fw-bold" onclick="salvarNovaObra()">Salvar Obra</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL: ESTÚDIO DE CROQUIS -->
     <div class="modal fade" id="modalCroquiBuilder" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-info text-white">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-palette me-2"></i>Estúdio de Croquis & Imagens PNG</h5>
+                    <h5 class="modal-title fw-bold"><i class="bi bi-palette me-2"></i>Estúdio de Croquis</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="drop-zone mb-3" onclick="document.getElementById('fileCroquiInput').click()">
                         <i class="bi bi-cloud-arrow-up text-warning fs-1 mb-2"></i>
                         <h5 class="fw-bold">Clique para Selecionar Croqui (PNG / JPG)</h5>
-                        <p class="text-muted small mb-0">Suba os desenhos técnicos em vista externa da sua base.</p>
-                        <input type="file" id="fileCroquiInput" class="d-none" accept="image/*" onchange="carregarImagemCroqui(event)">
-                    </div>
-                    <div id="previewCroquiArea" class="text-center d-none">
-                        <img id="croquiImgPreview" src="" alt="Croqui" style="max-height: 250px; border-radius: 8px;" class="shadow-sm border p-2">
+                        <input type="file" id="fileCroquiInput" class="d-none" accept="image/*">
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL: IMPORTADOR CEM (100) -->
     <div class="modal fade" id="modalImportarCEM" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-warning text-dark">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-filetype-xml me-2"></i>Leitor & Importador CEM (100)</h5>
+                    <h5 class="modal-title fw-bold"><i class="bi bi-filetype-xml me-2"></i>Leitor XML CEM (100)</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body bg-light">
                     <div class="drop-zone mb-3 bg-white" onclick="document.getElementById('cemXmlInput').click()">
                         <i class="bi bi-file-code-fill text-warning fs-1 mb-2"></i>
-                        <h5 class="fw-bold text-dark mb-1">Selecione o Arquivo XML do CEM (100)</h5>
+                        <h5 class="fw-bold text-dark mb-1">Selecione Arquivo XML do CEM (100)</h5>
                         <input type="file" id="cemXmlInput" class="d-none" accept=".xml">
                     </div>
                 </div>
@@ -312,16 +448,16 @@
     <!-- BOOTSTRAP 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // INICIALIZAÇÃO SEGURA DE MODAIS
-        let modalObraObj, modalCroquiObj, modalCemObj;
+        let modalObraObj, modalCroquiObj, modalCemObj, modalDriveObj;
+        let itemSelecionadoParaMedicao = null;
 
         document.addEventListener('DOMContentLoaded', function() {
             modalObraObj = new bootstrap.Modal(document.getElementById('modalNovaObra'));
             modalCroquiObj = new bootstrap.Modal(document.getElementById('modalCroquiBuilder'));
             modalCemObj = new bootstrap.Modal(document.getElementById('modalImportarCEM'));
+            modalDriveObj = new bootstrap.Modal(document.getElementById('modalDriveObra'));
         });
 
-        // TROCA DE ABAS INTERNAS (SEM ABRIR NOVAS GUIAS)
         function abrirAba(abaId) {
             document.querySelectorAll('.b-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
@@ -333,12 +469,11 @@
             if (screenEl) screenEl.classList.add('active');
         }
 
-        // ABRIR MODAIS
         function abrirModalNovaObra() { if(modalObraObj) modalObraObj.show(); }
         function abrirModalCroquiBuilder() { if(modalCroquiObj) modalCroquiObj.show(); }
         function abrirModalImportadorCEM() { if(modalCemObj) modalCemObj.show(); }
+        function abrirModalDriveObra() { if(modalDriveObj) modalDriveObj.show(); }
 
-        // PAINEL DUPLO
         function toggleSplitScreen() {
             const container = document.getElementById('main-container');
             container.classList.toggle('split-view');
@@ -346,7 +481,7 @@
             if (container.classList.contains('split-view')) {
                 btn.classList.replace('btn-dark', 'btn-danger');
                 btn.innerHTML = '<i class="bi bi-x-circle me-1"></i> Fechar Painel Duplo';
-                document.getElementById('screen-tecnica').classList.add('active');
+                document.getElementById('screen-fiscal').classList.add('active');
             } else {
                 btn.classList.replace('btn-danger', 'btn-dark');
                 btn.innerHTML = '<i class="bi bi-layout-split me-1"></i> Painel Duplo';
@@ -354,45 +489,62 @@
             }
         }
 
-        // UPLOAD DE IMAGEM PNG/JPG DE CROQUIS
-        function carregarImagemCroqui(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('croquiImgPreview').src = e.target.result;
-                    document.getElementById('previewCroquiArea').classList.remove('d-none');
-                }
-                reader.readAsDataURL(file);
-            }
+        // PREENCHER FORMULÁRIO DO FISCAL AO CLICAR EM "MEDIR VÃO"
+        function medirVaoItem(tag, desc, largProj, altProj, saldo) {
+            itemSelecionadoParaMedicao = { tag, desc, largProj, altProj, saldo };
+            document.getElementById('fiscalFormTag').value = `${tag} - ${desc}`;
+            document.getElementById('fiscalFormLarguraReal').value = largProj - 8; // sugestão folga
+            document.getElementById('fiscalFormAlturaReal').value = altProj - 10;
+            document.getElementById('fiscalFormQtdLiberar').value = saldo;
+            document.getElementById('lblFolgaL').textContent = `Projeto: ${largProj} mm`;
+            document.getElementById('lblFolgaH').textContent = `Projeto: ${altProj} mm`;
         }
 
-        // CADASTRO DE NOVA OBRA
+        function calcularFolgasFiscal() {
+            if (!itemSelecionadoParaMedicao) return;
+            const lReal = parseInt(document.getElementById('fiscalFormLarguraReal').value) || 0;
+            const hReal = parseInt(document.getElementById('fiscalFormAlturaReal').value) || 0;
+            const folgaL = itemSelecionadoParaMedicao.largProj - lReal;
+            const folgaH = itemSelecionadoParaMedicao.altProj - hReal;
+            document.getElementById('lblFolgaL').textContent = `Projeto: ${itemSelecionadoParaMedicao.largProj} mm (Folga: ${folgaL}mm)`;
+            document.getElementById('lblFolgaH').textContent = `Projeto: ${itemSelecionadoParaMedicao.altProj} mm (Folga: ${folgaH}mm)`;
+        }
+
+        function salvarMedicaoFiscal() {
+            const tag = document.getElementById('fiscalFormTag').value;
+            const qtd = document.getElementById('fiscalFormQtdLiberar').value;
+            if (!tag || !qtd) {
+                alert("Selecione um item e informe a quantidade a liberar!");
+                return;
+            }
+            alert(`Medição da TAG ${tag} salva com sucesso! ${qtd} peças liberadas para a produção.`);
+        }
+
+        function salvarLinkDrive() {
+            const link = document.getElementById('driveLinkInput').value;
+            if(!link) { alert("Insira um link válido do Drive!"); return; }
+            document.getElementById('btnOpenDrive').href = link;
+            document.getElementById('driveLinkArea').classList.remove('d-none');
+            alert("Link do Google Drive salvo para esta obra!");
+        }
+
         function salvarNovaObra() {
             const nome = document.getElementById('novoNomeObra').value;
             const cod = document.getElementById('novoCodObra').value;
-            if(!nome || !cod) {
-                alert("Preencha o Nome e o Código da Obra!");
-                return;
-            }
+            if(!nome || !cod) { alert("Preencha o Nome e o Código!"); return; }
             const select = document.getElementById('globalProjetoSelector');
             const opt = document.createElement('option');
             opt.value = cod;
             opt.textContent = `${nome} (${cod})`;
             select.appendChild(opt);
             select.value = cod;
-            
-            document.getElementById('dashNomeProjetoHeader').textContent = nome;
-            document.getElementById('dashIdProjetoHeader').textContent = cod;
-            
             modalObraObj.hide();
-            alert(`Obra ${nome} cadastrada com sucesso!`);
+            alert(`Obra ${nome} criada com sucesso!`);
         }
 
-        // LIMPEZA DA BASE
         function limparBaseTeste() {
-            if(confirm("Tem certeza que deseja apagar os registros de teste e reiniciar a base da obra Infinity Brooklin?")) {
-                alert("Base de teste limpa com sucesso!");
+            if(confirm("Deseja apagar os dados de teste para iniciar a obra limpa?")) {
+                alert("Base de teste reiniciada!");
                 location.reload();
             }
         }
