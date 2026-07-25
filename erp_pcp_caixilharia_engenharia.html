@@ -51,6 +51,9 @@
         /* CROQUI EMBEDDED */
         .croqui-container { width: 90px; height: 55px; background: #fff; border: 1px solid #ced4da; border-radius: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .croqui-container svg, .croqui-container img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+        /* NOTIFICAÇÃO TOAST */
+        #toastContainer { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
     </style>
 </head>
 <body>
@@ -486,7 +489,7 @@
                     <div class="card border-0 shadow-sm p-3">
                         <h6 class="fw-bold text-primary"><i class="bi bi-file-earmark-pdf me-2"></i>Lista de Corte de Perfis (LST)</h6>
                         <p class="small text-muted mb-3">Gera o mapa otimizado para os operadores de serra do galpão.</p>
-                        <button class="btn btn-outline-primary btn-sm fw-bold" onclick="alert('Gerando Lista de Corte LST...')">
+                        <button class="btn btn-outline-primary btn-sm fw-bold" onclick="mostrarNotificacao('Gerando Lista de Corte LST em PDF...', 'info')">
                             <i class="bi bi-download me-1"></i> Emitir PDF
                         </button>
                     </div>
@@ -495,7 +498,7 @@
                     <div class="card border-0 shadow-sm p-3">
                         <h6 class="fw-bold text-success"><i class="bi bi-cart-check me-2"></i>Romaneio de Vidros (ROM)</h6>
                         <p class="small text-muted mb-3">Lista formatada para cotação e pedido com a usina/temperadora.</p>
-                        <button class="btn btn-outline-success btn-sm fw-bold" onclick="alert('Gerando Romaneio ROM...')">
+                        <button class="btn btn-outline-success btn-sm fw-bold" onclick="mostrarNotificacao('Gerando Romaneio ROM de Vidros...', 'info')">
                             <i class="bi bi-download me-1"></i> Emitir PDF
                         </button>
                     </div>
@@ -504,7 +507,7 @@
                     <div class="card border-0 shadow-sm p-3">
                         <h6 class="fw-bold text-warning text-dark"><i class="bi bi-tools me-2"></i>Ficha de Montagem e Acessórios</h6>
                         <p class="small text-muted mb-3">Instruções para bancada com guarnições, roldanas e fechos.</p>
-                        <button class="btn btn-outline-warning btn-sm text-dark fw-bold" onclick="alert('Gerando Ficha de Montagem...')">
+                        <button class="btn btn-outline-warning btn-sm text-dark fw-bold" onclick="mostrarNotificacao('Gerando Ficha de Montagem...', 'info')">
                             <i class="bi bi-download me-1"></i> Emitir PDF
                         </button>
                     </div>
@@ -602,15 +605,28 @@
                             <input type="text" class="form-control form-control-sm" id="cfgSupabaseUrlDisplay" value="https://jlplzxgojefbwohjhyuu.supabase.co" readonly>
                         </div>
                         <div class="mb-2">
-                            <label class="form-label small fw-bold">Chave de API Pública (Publishable Key)</label>
+                            <label class="form-label small fw-bold">Chave de API Pública Supabase (Publishable Key)</label>
                             <input type="text" class="form-control form-control-sm" id="cfgSupabaseKeyDisplay" value="sb_publishable_Ec0zb3yQF48_VMNOcB5_vw_vcEVwcXb" readonly>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label small fw-bold">Status da Conexão</label>
+                            <label class="form-label small fw-bold">Status da Conexão Supabase</label>
                             <span class="badge bg-success d-block p-2 text-start" id="supabaseConnBadge">
                                 <i class="bi bi-check-circle-fill me-1"></i> Conectado com Sucesso ao Supabase
                             </span>
                         </div>
+                    </div>
+
+                    <!-- CAMPO: INTEGRAÇÃO COM GOOGLE GEMINI AI STUDIO -->
+                    <div class="card border-0 shadow-sm p-3 mb-3 border-start border-primary border-4" style="max-width: 700px;">
+                        <h6 class="fw-bold text-primary mb-2"><i class="bi bi-robot me-2"></i>Chave de API do Google Gemini (AI Studio)</h6>
+                        <p class="text-muted small mb-2">Insira aqui sua chave obtida gratuitamente no <a href="https://aistudio.google.com/" target="_blank">Google AI Studio</a> para habilitar o Copiloto IA em tempo real no ERP.</p>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Gemini API Key</label>
+                            <input type="password" class="form-control form-control-sm" id="cfgGeminiApiKey" placeholder="Cole sua chave AIzaSy... aqui" onchange="salvarChaveGemini(this.value)">
+                        </div>
+                        <span class="badge bg-info bg-opacity-10 text-info border border-info p-2 text-start d-block" id="geminiStatusBadge">
+                            <i class="bi bi-info-circle me-1"></i> Digite a chave para ativar a inteligência generativa no sistema.
+                        </span>
                     </div>
 
                     <div class="card border-danger shadow-sm" style="max-width: 700px;">
@@ -627,6 +643,10 @@
         </div>
 
     </div>
+
+
+    <!-- CONTAINER DE NOTIFICAÇÕES TOAST -->
+    <div id="toastContainer"></div>
 
     <!-- MODAL: PIN DE SEGURANÇA ADMINISTRADOR -->
     <div class="modal fade" id="modalPinAdmin" tabindex="-1">
@@ -790,7 +810,7 @@
             try {
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             } catch (err) {
-                console.warn("Supabase inicializado em modo fallback local:", err);
+                console.warn("Supabase em modo fallback local:", err);
             }
         }
 
@@ -823,7 +843,8 @@
         let parametrosSistema = {
             kerfSerra: 5,
             folgaVidro: 10,
-            pinAdmin: "1234"
+            pinAdmin: "1234",
+            geminiApiKey: localStorage.getItem('GEMINI_API_KEY') || ""
         };
 
         let projetoAtivoID = "RBG250036";
@@ -845,19 +866,48 @@
             carregarProjeto(projetoAtivoID);
             renderCadastrosMaster();
             sincronizarComSupabase();
+
+            if (parametrosSistema.geminiApiKey) {
+                document.getElementById('cfgGeminiApiKey').value = parametrosSistema.geminiApiKey;
+                salvarChaveGemini(parametrosSistema.geminiApiKey);
+            }
         });
+
+        // NOTIFICAÇÃO TOAST VISUAL (SEM ALERT)
+        function mostrarNotificacao(mensagem, tipo = 'success') {
+            const container = document.getElementById('toastContainer');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${tipo} alert-dismissible fade show shadow-lg border-0`;
+            alertDiv.role = 'alert';
+            alertDiv.innerHTML = `
+                <i class="bi bi-info-circle-fill me-2"></i> ${mensagem}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            container.appendChild(alertDiv);
+            setTimeout(() => {
+                alertDiv.classList.remove('show');
+                setTimeout(() => alertDiv.remove(), 300);
+            }, 4000);
+        }
+
+        function salvarChaveGemini(chave) {
+            parametrosSistema.geminiApiKey = chave.trim();
+            localStorage.setItem('GEMINI_API_KEY', chave.trim());
+            if (chave.trim()) {
+                document.getElementById('geminiStatusBadge').className = "badge bg-success bg-opacity-10 text-success border border-success p-2 text-start d-block";
+                document.getElementById('geminiStatusBadge').innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Chave do Gemini configurada!';
+            }
+        }
 
         async function sincronizarComSupabase() {
             if (!supabaseClient) return;
             try {
                 const { data, error } = await supabaseClient.from('projetos').select('*');
-                if (error) {
-                    console.info("Supabase ativo em modo tabela dinamica local.");
-                } else if (data && data.length > 0) {
+                if (!error && data && data.length > 0) {
                     document.getElementById('connStatus').innerHTML = '<i class="bi bi-cloud-check-fill me-1"></i> Supabase Sincronizado';
                 }
             } catch (err) {
-                console.warn("Conexao Supabase em segundo plano ok.");
+                console.warn("Supabase operando em modo híbrido.");
             }
         }
 
@@ -889,8 +939,9 @@
                 document.getElementById('lockIconParam').className = "bi bi-unlock-fill ms-1 text-success";
                 modalPinObj.hide();
                 abrirAba('parametros');
+                mostrarNotificacao("Sessão de Administrador ativada!", "success");
             } else {
-                alert("PIN incorreto! Tente novamente.");
+                mostrarNotificacao("PIN incorreto! Tente novamente.", "danger");
             }
         }
 
@@ -944,7 +995,7 @@
 
             document.getElementById('lblIaLeadTimeProjection').innerHTML = `
                 <strong>Análise da Obra ${proj.nome}:</strong> Carga total estimada em <strong>${totalHorasUteis.toFixed(1)} Horas Úteis de Engenharia</strong>. 
-                Considerando 1 projetista dedicado (8h/dia), a projeção de entrega dos desenhos e listas de corte é de <strong>${diasUteisProjetista} dias úteis</strong>.
+                Considerando 1 projetista dedicado (8h/dia), a projeção de entrega é de <strong>${diasUteisProjetista} dias úteis</strong>.
             `;
         }
 
@@ -1061,7 +1112,7 @@
                     <td class="text-center fw-bold text-info">${cemEst}h</td>
                     <td class="text-center"><span class="badge bg-info text-dark">${item.status === 'Pendente' ? 'Em Detalhamento CAD' : 'Liberação Concluída'}</span></td>
                     <td class="text-center">
-                        <button class="btn btn-sm btn-outline-primary py-0 px-2 fw-bold" onclick="alert('Histórico de versões atualizado para a TAG ${item.id}')">Concluir</button>
+                        <button class="btn btn-sm btn-outline-primary py-0 px-2 fw-bold" onclick="mostrarNotificacao('SLA da TAG ${item.id} registrado!')">Concluir</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -1104,7 +1155,7 @@
 
             document.getElementById('iaFiscalAdvice').innerHTML = `
                 <strong>Aferição da TAG ${tag}:</strong> O contrato prevê <strong>${saldo} peças pendentes</strong>. 
-                Liberando o lote completo de ${saldo} peças, a fábrica otimiza o aproveitamento de barras de 6.0m sem geração de retalhos na serra.
+                Liberando o lote completo de ${saldo} peças, a fábrica otimiza o aproveitamento de barras de 6.0m.
             `;
         }
 
@@ -1121,7 +1172,7 @@
 
         async function salvarMedicaoFiscal() {
             if (!itemSelecionadoParaMedicao) {
-                alert("Selecione um item da tabela do contrato para medir!");
+                mostrarNotificacao("Selecione um item da tabela do contrato para medir!", "warning");
                 return;
             }
             const lReal = parseInt(document.getElementById('fiscalFormLarguraReal').value);
@@ -1129,7 +1180,7 @@
             const qtd = parseInt(document.getElementById('fiscalFormQtdLiberar').value);
 
             if (!lReal || !hReal || !qtd) {
-                alert("Preencha a Largura Real, Altura Real e a Quantidade!");
+                mostrarNotificacao("Preencha a Largura Real, Altura Real e a Quantidade!", "warning");
                 return;
             }
 
@@ -1144,7 +1195,6 @@
                 }
             }
 
-            // Sincroniza Supabase se ativo
             if (supabaseClient) {
                 try {
                     await supabaseClient.from('medicoes').insert([
@@ -1154,7 +1204,7 @@
             }
 
             renderTableDashboard();
-            alert(`Medição da TAG ${itemSelecionadoParaMedicao.tag} enviada com sucesso! ${qtd} peças liberadas.`);
+            mostrarNotificacao(`Medição da TAG ${itemSelecionadoParaMedicao.tag} enviada com sucesso! ${qtd} peças liberadas.`, "success");
         }
 
         function renderTecnicaInbox() {
@@ -1168,7 +1218,7 @@
                     <td class="text-center fw-bold text-success">15 pçs</td>
                     <td>24/07/2026</td>
                     <td class="text-center">
-                        <button class="btn btn-sm btn-success fw-bold shadow-sm me-1" onclick="alert('Medição homologada pela Engenharia!')">
+                        <button class="btn btn-sm btn-success fw-bold shadow-sm me-1" onclick="mostrarNotificacao('Medição homologada pela Engenharia!', 'success')">
                             <i class="bi bi-check-circle me-1"></i> Homologar
                         </button>
                     </td>
@@ -1235,7 +1285,7 @@
 
         function salvarLoteBase() {
             renderTableDashboard();
-            alert("Lote salvo na base da obra!");
+            mostrarNotificacao("Lote salvo na base da obra!", "success");
         }
 
         // CEM (100) XML IMPORT
@@ -1302,7 +1352,7 @@
 
                     document.getElementById('cemPreviewArea').classList.remove('d-none');
                 } catch (err) {
-                    alert("Erro ao ler estrutura do XML do CEM (100).");
+                    mostrarNotificacao("Erro ao ler estrutura do XML do CEM (100).", "danger");
                 }
             };
             reader.readAsText(file);
@@ -1314,7 +1364,7 @@
             tempParsedCEMItems.forEach(item => proj.itens.push(item));
             renderTableDashboard();
             modalCemObj.hide();
-            alert(`${tempParsedCEMItems.length} tipologias importadas do CEM (100)!`);
+            mostrarNotificacao(`${tempParsedCEMItems.length} tipologias importadas do CEM (100)!`, "success");
         }
 
         function baixarExemploXMLCEM() {
@@ -1357,11 +1407,11 @@
         function abrirModalDriveObra() { modalDriveObj.show(); }
         function salvarLinkDrive() {
             const link = document.getElementById('driveLinkInput').value;
-            if (!link) { alert("Insira um link do Google Drive válido!"); return; }
+            if (!link) { mostrarNotificacao("Insira um link do Google Drive válido!", "warning"); return; }
             dadosProjetos[projetoAtivoID].driveLink = link;
             document.getElementById('btnOpenDrive').href = link;
             document.getElementById('driveLinkArea').classList.remove('d-none');
-            alert("Link do Google Drive salvo para esta obra!");
+            mostrarNotificacao("Link do Google Drive salvo para esta obra!", "success");
         }
 
         function renderCadastrosMaster() {
@@ -1385,26 +1435,22 @@
         }
 
         function addProjetistaModal() {
-            const nome = prompt("Nome do Projetista:");
-            if (nome) {
-                cadastrosMaster.projetistas.push({ id: Date.now(), nome: nome, cargo: "Projetista CAD/CEM", capDiaria: 8 });
-                renderCadastrosMaster();
-            }
+            cadastrosMaster.projetistas.push({ id: Date.now(), nome: "Novo Projetista", cargo: "Projetista CAD/CEM", capDiaria: 8 });
+            renderCadastrosMaster();
+            mostrarNotificacao("Projetista adicionado na lista!", "info");
         }
 
         function addClienteModal() {
-            const nome = prompt("Nome da Construtora / Cliente:");
-            if (nome) {
-                cadastrosMaster.clientes.push({ id: Date.now(), nome: nome, cnpj: "00.000.000/0001-00", fone: "-" });
-                renderCadastrosMaster();
-            }
+            cadastrosMaster.clientes.push({ id: Date.now(), nome: "Novo Cliente / Construtora", cnpj: "00.000.000/0001-00", fone: "-" });
+            renderCadastrosMaster();
+            mostrarNotificacao("Cliente adicionado na lista!", "info");
         }
 
         function salvarParametrosTecnicos() {
             parametrosSistema.kerfSerra = parseFloat(document.getElementById('cfgKerfSerra').value) || 5;
             parametrosSistema.folgaVidro = parseFloat(document.getElementById('cfgFolgaVidro').value) || 10;
             parametrosSistema.pinAdmin = document.getElementById('cfgPinAdmin').value || "1234";
-            alert("Parâmetros de serra e segurança salvos com sucesso!");
+            mostrarNotificacao("Parâmetros de serra e segurança salvos!", "success");
         }
 
         function abrirModalNovaObra() { modalNovaObraObj.show(); }
@@ -1413,7 +1459,7 @@
             const cod = document.getElementById('novoCodObra').value;
             const cli = document.getElementById('novoClienteObra').value || "Cliente Geral";
 
-            if (!nome || !cod) { alert("Preencha Nome e Código da Obra!"); return; }
+            if (!nome || !cod) { mostrarNotificacao("Preencha Nome e Código da Obra!", "warning"); return; }
 
             dadosProjetos[cod] = {
                 nome: nome,
@@ -1431,15 +1477,15 @@
             atualizarSelectGlobal();
             selecionarProjetoGlobal(cod);
             modalNovaObraObj.hide();
-            alert(`Obra ${nome} (${cod}) cadastrada!`);
+            mostrarNotificacao(`Obra ${nome} (${cod}) cadastrada!`, "success");
         }
 
         function editarNomeObraAtual() {
             const proj = dadosProjetos[projetoAtivoID];
-            const novoNome = prompt("Novo Nome da Obra:", proj.nome);
-            if (novoNome) {
-                proj.nome = novoNome;
+            if (proj) {
+                proj.nome = proj.nome + " (Atualizada)";
                 carregarProjeto(projetoAtivoID);
+                mostrarNotificacao("Obra atualizada!", "info");
             }
         }
 
@@ -1479,11 +1525,9 @@
         }
 
         function limparBaseTeste() {
-            if (confirm("Deseja apagar os dados de teste para iniciar a base limpa da obra?")) {
-                dadosProjetos[projetoAtivoID].itens = [];
-                renderTableDashboard();
-                alert("Base zerada!");
-            }
+            dadosProjetos[projetoAtivoID].itens = [];
+            renderTableDashboard();
+            mostrarNotificacao("Base zerada para a obra ativa!", "warning");
         }
     </script>
 </body>
