@@ -3,1531 +3,332 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ERP PCP - Engenharia & Caixilharia de Alumínio</title>
-    <!-- Bootstrap 5 CSS e Ícones -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Supabase JS Client v2 -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>M-Sing Pro | PCP & Engenharia</title>
     
+    <!-- Bibliotecas Externas -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
-        :root {
-            --primary-color: #0d6efd;
-            --secondary-color: #495057;
-            --bg-light: #f4f6f9;
-            --dark-header: #1a1d21;
+        :root { 
+            --primary: #009ef7; --dark: #0f172a; --bg-light: #f8fafc; 
         }
-        body { background-color: var(--bg-light); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #212529; }
+        body { height: 100vh; margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; background: #1e293b; display: flex; flex-direction: column; }
         
-        /* BROWSER TABS ESTILO FACTORY */
-        .browser-tabs { background: var(--dark-header); padding: 6px 12px 0 12px; display: flex; gap: 4px; overflow-x: auto; border-bottom: 2px solid var(--primary-color); }
-        .b-tab { color: #a0aec0; background: #2b3036; padding: 9px 18px; border-radius: 6px 6px 0 0; cursor: pointer; font-size: 0.88rem; font-weight: 600; display: flex; align-items: center; gap: 8px; user-select: none; transition: all 0.2s; border: 1px solid transparent; border-bottom: none; }
-        .b-tab:hover { background: #383e45; color: #fff; }
-        .b-tab.active { background: var(--bg-light); color: var(--primary-color); font-weight: 700; border-color: #cbd5e1; }
-        
-        /* TOOLBAR GLOBAL */
-        .global-toolbar { background: #ffffff; border-bottom: 1px solid #dee2e6; padding: 10px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-        
-        /* TELAS E NAVEGAÇÃO INTERNA */
-        .app-screen { display: none; padding: 18px; }
-        .app-screen.active { display: block; }
-        
-        /* TELA DIVIDIDA (PAINEL DUPLO) */
-        .split-view-mode { display: flex; gap: 16px; padding: 16px; }
-        .split-view-mode .app-screen { display: block !important; flex: 1; width: 50%; padding: 0; }
-        
-        /* CARDS E ELEMENTOS TÉCNICOS DE CAIXILHARIA */
-        .card-ia-copilot { background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); border-left: 5px solid #4f46e5; }
-        .card-analytics { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-left: 5px solid #0284c7; }
-        .drop-zone { border: 2px dashed #ffc107; border-radius: 8px; padding: 25px; text-align: center; cursor: pointer; background: #fff8e6; transition: 0.2s; }
-        .drop-zone:hover { background-color: #fff0c2; }
-        
-        /* BADGES E STATUS DO PCP */
-        .status-pendente { background-color: #dc3545; color: #fff; }
-        .status-tecnica { background-color: #17a2b8; color: #fff; }
-        .status-producao { background-color: #ffc107; color: #000; }
-        .status-finalizado { background-color: #198754; color: #fff; }
+        /* Layout e Tabs */
+        .os-titlebar { height: 40px; background: var(--dark); color: #94a3b8; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; border-bottom: 1px solid #334155; }
+        .browser-tabs { background: var(--dark); display: flex; padding: 6px 12px 0 12px; gap: 4px; overflow-x: auto; border-bottom: 3px solid var(--primary); }
+        .b-tab { background: #334155; color: #cbd5e1; padding: 9px 18px; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.88rem; font-weight: 600; display: flex; align-items: center; gap: 8px; white-space: nowrap; transition: 0.2s; }
+        .b-tab.active { background: var(--bg-light); color: var(--primary); }
+        .global-toolbar { background: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 10px 20px; display: flex; align-items: center; gap: 15px; }
 
-        /* CROQUI EMBEDDED */
-        .croqui-container { width: 90px; height: 55px; background: #fff; border: 1px solid #ced4da; border-radius: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .croqui-container svg, .croqui-container img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        #screens-container { display: flex; flex: 1; overflow: hidden; background: #cbd5e1; }
+        .app-screen { display: none; background: var(--bg-light); height: 100%; flex-direction: column; overflow-y: auto; flex: 1; padding: 20px; }
+        .app-screen.active { display: flex; }
+        
+        /* Tabelas */
+        .table-inline-input { border: 1px solid transparent; background: transparent; padding: 2px 5px; font-size: 0.85rem; width: 100%; border-radius: 4px; }
+        .table-inline-input:focus { border-color: var(--primary); background: #ffffff; outline: none; }
 
-        /* NOTIFICAÇÃO TOAST */
-        #toastContainer { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
+        /* Estilo Etiquetas para Impressão */
+        @media print {
+            body * { visibility: hidden; }
+            #print-section, #print-section * { visibility: visible; }
+            #print-section { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
+            .no-print { display: none !important; }
+            .etiqueta {
+                width: 10cm; height: 5cm; border: 1px solid #000; margin-bottom: 0.2cm;
+                padding: 10px; box-sizing: border-box; display: flex; flex-direction: column;
+                page-break-after: always;
+            }
+        }
+
+        #ai-loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 10000; align-items: center; justify-content: center; flex-direction: column; color: white; }
     </style>
 </head>
 <body>
 
+    <div id="ai-loader">
+        <div class="spinner-border text-info"></div>
+        <h4 class="mt-3">Sincronizando com Supabase...</h4>
+    </div>
+
+    <!-- Container de Impressão -->
+    <div id="print-section" class="d-none"></div>
+
+    <div class="os-titlebar">
+        <span><i class="bi bi-cpu-fill text-info me-2"></i>M-SING PRO</span>
+        <small id="status-db" class="text-success"><i class="bi bi-cloud-check"></i> Nuvem Ativa</small>
+    </div>
+
     <div class="browser-tabs">
-        <div class="b-tab active" id="tab-dashboard" onclick="abrirAba('dashboard')">
-            <i class="bi bi-pie-chart-fill text-primary"></i> Painel PCP
-        </div>
-        <div class="b-tab" id="tab-tecnica" onclick="abrirAba('tecnica')">
-            <i class="bi bi-pencil-ruler text-info"></i> Área Técnica & SLA Projetistas
-            <span class="badge bg-danger ms-1" id="badgeInboxCount">1</span>
-        </div>
-        <div class="b-tab" id="tab-fiscal" onclick="abrirAba('fiscal')">
-            <i class="bi bi-person-badge text-warning"></i> Espaço do Fiscal (Obra)
-        </div>
-        <div class="b-tab" id="tab-importador" onclick="abrirAba('importador')">
-            <i class="bi bi-table text-success"></i> Editor de Lotes & CEM (100)
-        </div>
-        <div class="b-tab" id="tab-relatorios" onclick="abrirAba('relatorios')">
-            <i class="bi bi-printer-fill text-secondary"></i> Relatórios & OPs
-        </div>
-        <div class="b-tab" id="tab-parametros" onclick="tentarAcessarParametros()">
-            <i class="bi bi-sliders text-dark"></i> Parâmetros & Administrador
-            <i class="bi bi-lock-fill ms-1 text-muted" id="lockIconParam"></i>
-        </div>
+        <div class="b-tab active" onclick="abrirAba('dashboard')">PCP</div>
+        <div class="b-tab" onclick="abrirAba('editor')">1. Contrato</div>
+        <div class="b-tab" onclick="abrirAba('fiscal')">2. Fiscal</div>
+        <div class="b-tab" onclick="abrirAba('engenharia')">3. Engenharia</div>
+        <div class="b-tab" onclick="abrirAba('relatorios')">4. O.P & Etiquetas</div>
     </div>
 
-    <div class="global-toolbar shadow-sm">
-        <div class="d-flex align-items-center gap-2 flex-wrap">
-            <i class="bi bi-building-fill text-primary fs-5"></i>
-            <select id="globalProjetoSelector" class="form-select border-primary fw-bold text-primary shadow-sm" style="width: 320px;" onchange="selecionarProjetoGlobal(this.value)">
-                <!-- Preenchido via JavaScript -->
-            </select>
-            <button class="btn btn-sm btn-outline-secondary" onclick="editarNomeObraAtual()" title="Editar Obra Atual">
-                <i class="bi bi-pencil"></i>
-            </button>
-            <div class="ms-2 border-start ps-3 d-flex gap-2 flex-wrap">
-                <button class="btn btn-sm btn-success fw-bold" onclick="abrirModalNovaObra()">
-                    <i class="bi bi-plus-circle me-1"></i> Nova Obra
-                </button>
-                <button class="btn btn-sm btn-outline-info fw-bold" onclick="abrirModalCroquiBuilder()">
-                    <i class="bi bi-palette me-1"></i> Estúdio de Croquis
-                </button>
-                <button class="btn btn-sm btn-outline-warning text-dark fw-bold" onclick="abrirModalImportadorCEM()">
-                    <i class="bi bi-filetype-xml me-1"></i> Importar XML CEM (100)
-                </button>
-            </div>
-        </div>
-        <div class="ms-auto d-flex gap-2 align-items-center">
-            <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-2" id="connStatus">
-                <i class="bi bi-wifi me-1"></i> Supabase Ativo
-            </span>
-            <button class="btn btn-dark btn-sm fw-bold px-3 shadow-sm" onclick="toggleSplitScreen()" id="btnSplitScreen" title="Navegação Dupla Lado a Lado">
-                <i class="bi bi-layout-split me-1"></i> Painel Duplo
-            </button>
-        </div>
+    <div class="global-toolbar">
+        <select id="projetoSelector" class="form-select border-primary fw-bold" style="width: 300px;" onchange="mudarProjeto(this.value)"></select>
+        <button class="btn btn-sm btn-outline-primary" onclick="novaObra()">+ Nova Obra</button>
     </div>
 
-    <div id="mainContainer">
+    <div id="screens-container">
         
-        <!-- TELA 1: DASHBOARD PCP -->
+        <!-- DASHBOARD -->
         <div id="screen-dashboard" class="app-screen active">
-            <!-- CABEÇALHO MASTER DO PROJETO -->
-            <div class="card border-0 shadow-sm mb-3 bg-white">
-                <div class="card-body d-flex justify-content-between align-items-center p-3 flex-wrap gap-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <div id="dashLogoContainer" class="bg-light rounded p-2 border d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
-                            <i class="bi bi-building fs-2 text-secondary"></i>
-                        </div>
-                        <div>
-                            <h6 class="text-muted mb-1 small fw-bold"><i class="bi bi-geo-alt me-1"></i>OBRA EM EXECUÇÃO</h6>
-                            <h3 class="mb-0 fw-bold text-dark" id="dashNomeProjetoHeader">INFINITY BROOKLIN</h3>
-                            <div class="d-flex gap-2 mt-2 flex-wrap">
-                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary">
-                                    <i class="bi bi-hash me-1"></i>Cód: <span id="dashIdProjetoHeader">RBG250036</span>
-                                </span>
-                                <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary">
-                                    <i class="bi bi-person-workspace me-1"></i>Cliente: <span id="dashClienteHeader">Sinco Engenharia</span>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="text-end">
-                        <div class="d-flex gap-2 justify-content-end mb-2">
-                            <span class="badge bg-primary shadow-sm fs-6 px-3 py-2" id="badgeTotalTipos">0 Tipologias</span>
-                            <span class="badge bg-dark shadow-sm fs-6 px-3 py-2" id="badgeTotalPecas">0 Peças Totais</span>
-                        </div>
-                        <span class="badge bg-warning bg-opacity-10 text-dark border border-warning px-2 py-1 small">
-                            <i class="bi bi-speedometer2 me-1 text-warning"></i> Fator Dificuldade Geral (HH): <strong id="lblFatorDificuldade">0.0x</strong>
-                        </span>
-                    </div>
-                </div>
-            </div>
+            <h4 class="fw-bold mb-4">Dashboard PCP</h4>
+            <div id="kanbanContainer" class="row g-3"></div>
+        </div>
 
-            <div class="row g-3 mb-3">
-                <div class="col-md-3">
-                    <div class="card border-0 shadow-sm border-start border-primary border-4 p-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-muted mb-0 small fw-bold">TOTAL DO CONTRATO</h6>
-                                <h3 class="mb-0 fw-bold text-primary"><span id="kpiTotalContrato">0</span> <span class="fs-6 text-muted fw-normal">pçs</span></h3>
-                            </div>
-                            <i class="bi bi-file-earmark-text fs-1 text-primary opacity-25"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card border-0 shadow-sm border-start border-info border-4 p-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-muted mb-0 small fw-bold">AFERIDAS / LIBERADAS</h6>
-                                <h3 class="mb-0 fw-bold text-info"><span id="kpiLiberados">0</span> <span class="fs-6 text-muted fw-normal">pçs</span></h3>
-                            </div>
-                            <i class="bi bi-ruler fs-1 text-info opacity-25"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card border-0 shadow-sm border-start border-warning border-4 p-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-muted mb-0 small fw-bold">EM PRODUÇÃO</h6>
-                                <h3 class="mb-0 fw-bold text-warning"><span id="kpiProducao">0</span> <span class="fs-6 text-muted fw-normal">pçs</span></h3>
-                            </div>
-                            <i class="bi bi-gear-wide-connected fs-1 text-warning opacity-25"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card border-0 shadow-sm border-start border-danger border-4 p-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-muted mb-0 small fw-bold">SALDO RESTANTE</h6>
-                                <h3 class="mb-0 fw-bold text-danger"><span id="kpiRestante">0</span> <span class="fs-6 text-muted fw-normal">pçs</span></h3>
-                            </div>
-                            <i class="bi bi-hourglass-split fs-1 text-danger opacity-25"></i>
-                        </div>
-                    </div>
-                </div>
+        <!-- EDITOR DE CONTRATO -->
+        <div id="screen-editor" class="app-screen">
+            <div class="d-flex justify-content-between mb-3">
+                <h4 class="fw-bold">Itens do Contrato</h4>
+                <button class="btn btn-sm btn-primary" onclick="addItem()">+ Adicionar Item</button>
             </div>
-
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
-                    <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-list-task me-2 text-primary"></i>Itens do Contrato & Progresso de Liberação</h6>
-                    <div class="d-flex gap-2">
-                        <input type="text" id="dashSearchInput" class="form-control form-control-sm" style="width: 200px;" placeholder="Pesquisar TAG / Tipo..." oninput="renderTableDashboard()">
-                        <select id="dashStatusFilter" class="form-select form-select-sm" style="width: 160px;" onchange="renderTableDashboard()">
-                            <option value="Todos">Todos os Status</option>
-                            <option value="Pendente">Pendentes</option>
-                            <option value="Área Técnica">Na Técnica</option>
-                            <option value="Em Produção">Em Produção</option>
-                            <option value="Finalizado">Finalizados</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="ps-3">TAG / Código</th>
-                                    <th>Croqui Esquemático</th>
-                                    <th>Descrição / Tipologia</th>
-                                    <th>Linha</th>
-                                    <th class="text-center">Complexidade HH</th>
-                                    <th class="text-center">Projeto ($L \times H$)</th>
-                                    <th class="text-center">Aferido Real</th>
-                                    <th class="text-center">Contrato</th>
-                                    <th class="text-center">Liberado</th>
-                                    <th class="text-center" style="width: 110px;">Progresso</th>
-                                    <th class="text-center">Status PCP</th>
-                                </tr>
-                            </thead>
-                            <tbody id="dashTableBody">
-                                <!-- Renderizado via JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <table class="table table-sm table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>TAG</th><th>Tipologia</th><th>L</th><th>H</th><th>Qtd</th><th>Cor</th><th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="editorTableBody"></tbody>
+                </table>
             </div>
         </div>
 
-        <div id="screen-tecnica" class="app-screen">
-            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                <div>
-                    <h3 class="fw-bold text-dark mb-0"><i class="bi bi-pencil-ruler text-info me-2"></i>Área Técnica & SLA de Projetistas</h3>
-                    <p class="text-muted mb-0 small">Controle de entrada e saída de projetos, tempos de CAD/CEM e cálculo automático de estimativas de entrega.</p>
-                </div>
-                <button class="btn btn-primary btn-sm fw-bold shadow-sm" onclick="calcularProjecaoPrazosEngenharia()">
-                    <i class="bi bi-cpu-fill me-1"></i> Simular Lead Time do Lote
-                </button>
-            </div>
-
-            <!-- MOTOR DE INTELIGÊNCIA PCP: PREVISÃO DE TEMPO DA ENGENHARIA -->
-            <div class="card card-analytics p-3 mb-3 shadow-sm rounded-3">
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="bg-primary text-white p-3 rounded-circle">
-                            <i class="bi bi-clock-history fs-3"></i>
-                        </div>
-                        <div>
-                            <h6 class="fw-bold text-dark mb-1"><i class="bi bi-robot me-1 text-primary"></i>Motor de Previsão de Horas do Projetista</h6>
-                            <p class="mb-0 text-secondary small" id="lblIaLeadTimeProjection">
-                                Clique em [Simular Lead Time] para calcular a carga horária necessária de CAD + CEM para este contrato.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="d-flex gap-3 text-center border-start ps-3">
-                        <div>
-                            <span class="small text-muted d-block fw-bold">ESTIMATIVA CAD</span>
-                            <h4 class="mb-0 fw-bold text-primary" id="lblTotalCadHours">0.0h</h4>
-                        </div>
-                        <div>
-                            <span class="small text-muted d-block fw-bold">ESTIMATIVA CEM</span>
-                            <h4 class="mb-0 fw-bold text-info" id="lblTotalCemHours">0.0h</h4>
-                        </div>
-                        <div>
-                            <span class="small text-muted d-block fw-bold">PRAZO ESTIMADO</span>
-                            <h4 class="mb-0 fw-bold text-success" id="lblTotalDaysProjection">0 Dias</h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TABELA DE RASTREIO DE PROJETOS NA ENGENHARIA -->
-            <div class="card border-0 shadow-sm mb-3">
-                <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center">
-                    <h6 class="fw-bold text-dark mb-0"><i class="bi bi-kanban me-2 text-info"></i>Fila de Detalhamento Técnico & Liberação de Desenhos</h6>
-                    <span class="badge bg-secondary">POP Nomenclatura Ativo</span>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="ps-3">TAG</th>
-                                    <th>Tipologia / Linha</th>
-                                    <th>Projetista Alocado</th>
-                                    <th class="text-center">Data Entrada</th>
-                                    <th class="text-center">Prev. Conclusão</th>
-                                    <th class="text-center">Horas CAD (Est / Real)</th>
-                                    <th class="text-center">Horas CEM (Est / Real)</th>
-                                    <th class="text-center">Status Engenharia</th>
-                                    <th class="text-center">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tecnicaTrackingTableBody">
-                                <!-- Preenchido via JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white py-2">
-                    <h6 class="fw-bold text-dark mb-0"><i class="bi bg-warning text-dark px-2 py-1 rounded me-2">1</i>Solicitações de Aferição Enviadas pelo Fiscal para Homologação</h6>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="ps-3">Req. ID</th>
-                                    <th>TAG</th>
-                                    <th>Fiscal Responsável</th>
-                                    <th class="text-center">L Real x H Real</th>
-                                    <th class="text-center">Qtd Aferida</th>
-                                    <th>Data Env.</th>
-                                    <th class="text-center">Homologação Técnica</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tecnicaInboxTableBody">
-                                <!-- Renderizado via JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+        <!-- FISCAL -->
         <div id="screen-fiscal" class="app-screen">
-            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                <div>
-                    <h3 class="fw-bold text-dark mb-0"><i class="bi bi-person-badge text-warning me-2"></i>Espaço do Fiscal de Obra (Medição de Campo)</h3>
-                    <p class="text-muted mb-0 small">Consulte os itens contratados, afera vãos reais ($L \times H$) e libere lotes com validação do PCP.</p>
-                </div>
-                <button class="btn btn-outline-primary fw-bold btn-sm shadow-sm" onclick="abrirModalDriveObra()">
-                    <i class="bi bi-google me-1"></i> Plantas Baixas & Drive da Obra
-                </button>
-            </div>
-
-            <!-- ORIENTAÇÃO DO COPILOTO PCP IA -->
-            <div class="card card-ia-copilot p-3 mb-3 shadow-sm rounded-3">
-                <div class="d-flex align-items-start gap-3">
-                    <div class="bg-primary text-white p-2 rounded-circle">
-                        <i class="bi bi-person-workspace fs-3 text-white"></i>
-                    </div>
-                    <div>
-                        <h6 class="fw-bold text-primary mb-1"><i class="bi bi-robot me-1"></i>Agente Copiloto PCP Especialista em Caixilharia</h6>
-                        <p class="mb-1 text-dark small" id="iaFiscalAdvice">
-                            Selecione uma TAG da tabela abaixo para conferir o lote e receber orientações de otimização da produção.
-                        </p>
-                        <small class="text-muted">
-                            💡 <em>Estratégia de Produção:</em> O fracionamento excessivo de lotes gera perda de retalhos na serra e aumenta a preparação da usinagem. Procure negociar a liberação de pavimentos completos com a engenharia da obra!
-                        </small>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row g-3">
-                <!-- TABELA DO CONTRATO PARA MEDIÇÃO -->
-                <div class="col-lg-7">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center">
-                            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-file-earmark-text text-primary me-2"></i>Itens do Contrato Fechado para Medição</h6>
-                            <small class="text-muted">Clique em [ Medir Vão ] para selecionar</small>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th class="ps-3">TAG</th>
-                                            <th>Descrição / Linha</th>
-                                            <th class="text-center">Projeto ($L \times H$)</th>
-                                            <th class="text-center">Contrato / Saldo</th>
-                                            <th class="text-center">Ação</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="fiscalContratoTableBody">
-                                        <!-- Renderizado via JS -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- FORMULÁRIO DE AFERIÇÃO DE CAMPO -->
-                <div class="col-lg-5">
-                    <div class="card border-0 shadow-sm border-top border-warning border-4">
-                        <div class="card-header bg-white py-2">
-                            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-ruler text-warning me-2"></i>Aferição Real de Vão ($L \times H$)</h6>
-                        </div>
-                        <div class="card-body p-3">
-                            <div class="mb-2">
-                                <label class="form-label small fw-bold mb-1">TAG / Item Selecionado</label>
-                                <input type="text" id="fiscalFormTag" class="form-control form-control-sm fw-bold text-primary" readonly placeholder="Clique em [Medir Vão] na tabela">
-                            </div>
-
-                            <div class="row g-2 mb-2">
-                                <div class="col-6">
-                                    <label class="form-label small fw-bold mb-1">Largura Real (mm)</label>
-                                    <input type="number" id="fiscalFormLarguraReal" class="form-control form-control-sm border-warning fw-bold" placeholder="Ex: 1192" oninput="calcularFolgasFiscal()">
-                                    <small class="text-muted" id="lblFolgaL">Projeto: - mm</small>
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label small fw-bold mb-1">Altura Real (mm)</label>
-                                    <input type="number" id="fiscalFormAlturaReal" class="form-control form-control-sm border-warning fw-bold" placeholder="Ex: 1190" oninput="calcularFolgasFiscal()">
-                                    <small class="text-muted" id="lblFolgaH">Projeto: - mm</small>
-                                </div>
-                            </div>
-
-                            <div class="mb-2">
-                                <label class="form-label small fw-bold mb-1">Quantidade de Peças Aferidas a Liberar</label>
-                                <input type="number" id="fiscalFormQtdLiberar" class="form-control form-control-sm fw-bold text-success" placeholder="Qtd peças do lote">
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label small fw-bold mb-1">Observações / Bloco / Pavimento</label>
-                                <textarea id="fiscalFormObs" class="form-control form-control-sm" rows="2" placeholder="Ex: Vãos conferidos no 5º Pavimento - Bloco B"></textarea>
-                            </div>
-
-                            <button class="btn btn-success fw-bold w-100 shadow-sm" onclick="salvarMedicaoFiscal()">
-                                <i class="bi bi-send-fill me-1"></i> Enviar Medição para Homologação Técnica
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="screen-importador" class="app-screen">
-            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2 flex-wrap gap-2">
-                <div>
-                    <h3 class="fw-bold text-dark mb-0"><i class="bi bi-table text-success me-2"></i>Editor de Lotes & Cadastro de Tipologias</h3>
-                    <p class="text-muted mb-0 small">Importe dados via Excel ou arquivo XML direto do Software CEM (100).</p>
-                </div>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-sm btn-outline-warning text-dark fw-bold shadow-sm" onclick="abrirModalImportadorCEM()">
-                        <i class="bi bi-filetype-xml me-1"></i> Importar XML CEM (100)
-                    </button>
-                    <button class="btn btn-sm btn-primary fw-bold shadow-sm" onclick="adicionarLinhaLote()">
-                        <i class="bi bi-plus-lg me-1"></i> Adicionar Linha
-                    </button>
-                    <button class="btn btn-sm btn-success fw-bold shadow-sm px-3" onclick="salvarLoteBase()">
-                        <i class="bi bi-cloud-arrow-up-fill me-1"></i> Salvar na Base da Obra
-                    </button>
-                </div>
-            </div>
-
+            <h4 class="fw-bold mb-3">Medição de Obra</h4>
             <div class="card border-0 shadow-sm">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="ps-3" style="width: 120px;">TAG</th>
-                                    <th>Descrição da Tipologia</th>
-                                    <th style="width: 140px;">Linha</th>
-                                    <th style="width: 110px;" class="text-center">Larg. Proj</th>
-                                    <th style="width: 110px;" class="text-center">Alt. Proj</th>
-                                    <th style="width: 100px;" class="text-center">Qtd Contrato</th>
-                                    <th style="width: 80px;" class="text-center">Remover</th>
-                                </tr>
-                            </thead>
-                            <tbody id="batchTableBody">
-                                <!-- Preenchido dinamicamente -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>TAG</th><th>Saldo</th><th>L Real</th><th>H Real</th><th>Qtd Lib.</th><th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fiscalTableBody"></tbody>
+                </table>
             </div>
         </div>
 
+        <!-- ENGENHARIA -->
+        <div id="screen-engenharia" class="app-screen">
+            <div class="d-flex justify-content-between mb-3">
+                <h4 class="fw-bold">Fila de Engenharia</h4>
+                <div class="d-flex gap-2">
+                    <input type="text" id="opNomeInput" class="form-control form-control-sm" placeholder="Nome da O.P.">
+                    <button class="btn btn-sm btn-success" onclick="gerarOP()">Gerar O.P.</button>
+                </div>
+            </div>
+            <div class="card border-0 shadow-sm">
+                <table class="table table-hover mb-0">
+                    <tbody id="engTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- RELATORIOS -->
         <div id="screen-relatorios" class="app-screen">
-            <h3 class="fw-bold text-dark mb-2"><i class="bi bi-printer-fill text-secondary me-2"></i>Relatórios & Ordens de Produção (OPs)</h3>
-            <p class="text-muted">Emissão de mapas de corte, romaneios de vidros e fichas de montagem.</p>
-            
-            <div class="row g-3 mt-1">
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm p-3">
-                        <h6 class="fw-bold text-primary"><i class="bi bi-file-earmark-pdf me-2"></i>Lista de Corte de Perfis (LST)</h6>
-                        <p class="small text-muted mb-3">Gera o mapa otimizado para os operadores de serra do galpão.</p>
-                        <button class="btn btn-outline-primary btn-sm fw-bold" onclick="mostrarNotificacao('Gerando Lista de Corte LST em PDF...', 'info')">
-                            <i class="bi bi-download me-1"></i> Emitir PDF
-                        </button>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm p-3">
-                        <h6 class="fw-bold text-success"><i class="bi bi-cart-check me-2"></i>Romaneio de Vidros (ROM)</h6>
-                        <p class="small text-muted mb-3">Lista formatada para cotação e pedido com a usina/temperadora.</p>
-                        <button class="btn btn-outline-success btn-sm fw-bold" onclick="mostrarNotificacao('Gerando Romaneio ROM de Vidros...', 'info')">
-                            <i class="bi bi-download me-1"></i> Emitir PDF
-                        </button>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm p-3">
-                        <h6 class="fw-bold text-warning text-dark"><i class="bi bi-tools me-2"></i>Ficha de Montagem e Acessórios</h6>
-                        <p class="small text-muted mb-3">Instruções para bancada com guarnições, roldanas e fechos.</p>
-                        <button class="btn btn-outline-warning btn-sm text-dark fw-bold" onclick="mostrarNotificacao('Gerando Ficha de Montagem...', 'info')">
-                            <i class="bi bi-download me-1"></i> Emitir PDF
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="screen-parametros" class="app-screen">
-            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                <div>
-                    <h3 class="fw-bold text-dark mb-0"><i class="bi bi-sliders text-dark me-2"></i>Parâmetros, Cadastros & Segurança</h3>
-                    <p class="text-muted mb-0 small">Configurações técnicas de serra, cadastros gerais de clientes/projetistas e chaves de API.</p>
-                </div>
-                <span class="badge bg-success px-3 py-2"><i class="bi bi-shield-lock-fill me-1"></i> Sessão Administrador Ativa</span>
-            </div>
-
-            <ul class="nav nav-tabs mb-3" id="paramSubTabs">
-                <li class="nav-item">
-                    <button class="nav-link active fw-bold" data-bs-toggle="tab" data-bs-target="#pane-param-fabrica">Tolerâncias & Serra</button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link fw-bold" data-bs-toggle="tab" data-bs-target="#pane-param-cadastros">Cadastros Máster</button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link fw-bold" data-bs-toggle="tab" data-bs-target="#pane-param-conexao">Conexão Supabase / API</button>
-                </li>
-            </ul>
-
-            <div class="tab-content">
-                <div class="tab-pane fade show active" id="pane-param-fabrica">
-                    <div class="card border-0 shadow-sm p-3" style="max-width: 800px;">
-                        <h6 class="fw-bold text-primary mb-3"><i class="bi bi-gear-fill me-2"></i>Parâmetros Técnicos de Usinagem e Corte</h6>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label small fw-bold">Desconto de Corte da Serra (Kerf/Espessura do Disco)</label>
-                                <div class="input-group input-group-sm">
-                                    <input type="number" id="cfgKerfSerra" class="form-control" value="5">
-                                    <span class="input-group-text">mm por corte</span>
-                                </div>
-                                <small class="text-muted">Desconto aplicado no cálculo de barras de perfis de 6.0m.</small>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label small fw-bold">Folga Padrão de Vidro em Esquadrias</label>
-                                <div class="input-group input-group-sm">
-                                    <input type="number" id="cfgFolgaVidro" class="form-control" value="10">
-                                    <span class="input-group-text">mm</span>
-                                </div>
-                                <small class="text-muted">Desconto de perímetro para expansão do alumínio e gaxetas.</small>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label small fw-bold">PIN de Segurança do Administrador</label>
-                                <input type="password" id="cfgPinAdmin" class="form-control form-control-sm" value="1234">
-                            </div>
-                        </div>
-                        <div class="mt-3 text-end">
-                            <button class="btn btn-primary btn-sm fw-bold" onclick="salvarParametrosTecnicos()">
-                                <i class="bi bi-save me-1"></i> Salvar Parâmetros de Serra
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="tab-pane fade" id="pane-param-cadastros">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <div class="card border-0 shadow-sm p-3">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h6 class="fw-bold text-dark mb-0"><i class="bi bi-people me-2"></i>Cadastro de Projetistas / Funcionários</h6>
-                                    <button class="btn btn-sm btn-outline-primary fw-bold" onclick="addProjetistaModal()">+ Adicionar</button>
-                                </div>
-                                <ul class="list-group list-group-flush small" id="listProjetistasMaster">
-                                    <!-- JS -->
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card border-0 shadow-sm p-3">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h6 class="fw-bold text-dark mb-0"><i class="bi bi-building me-2"></i>Cadastro de Clientes / Construtores</h6>
-                                    <button class="btn btn-sm btn-outline-success fw-bold" onclick="addClienteModal()">+ Adicionar</button>
-                                </div>
-                                <ul class="list-group list-group-flush small" id="listClientesMaster">
-                                    <!-- JS -->
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="tab-pane fade" id="pane-param-conexao">
-                    <div class="card border-0 shadow-sm p-3 mb-3" style="max-width: 700px;">
-                        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-database-gear me-2"></i>Apontamento do Banco de Dados Cloud (Supabase)</h6>
-                        <div class="mb-2">
-                            <label class="form-label small fw-bold">URL do Projeto Supabase</label>
-                            <input type="text" class="form-control form-control-sm" id="cfgSupabaseUrlDisplay" value="https://jlplzxgojefbwohjhyuu.supabase.co" readonly>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label small fw-bold">Chave de API Pública Supabase (Publishable Key)</label>
-                            <input type="text" class="form-control form-control-sm" id="cfgSupabaseKeyDisplay" value="sb_publishable_Ec0zb3yQF48_VMNOcB5_vw_vcEVwcXb" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">Status da Conexão Supabase</label>
-                            <span class="badge bg-success d-block p-2 text-start" id="supabaseConnBadge">
-                                <i class="bi bi-check-circle-fill me-1"></i> Conectado com Sucesso ao Supabase
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- CAMPO: INTEGRAÇÃO COM GOOGLE GEMINI AI STUDIO -->
-                    <div class="card border-0 shadow-sm p-3 mb-3 border-start border-primary border-4" style="max-width: 700px;">
-                        <h6 class="fw-bold text-primary mb-2"><i class="bi bi-robot me-2"></i>Chave de API do Google Gemini (AI Studio)</h6>
-                        <p class="text-muted small mb-2">Insira aqui sua chave obtida gratuitamente no <a href="https://aistudio.google.com/" target="_blank">Google AI Studio</a> para habilitar o Copiloto IA em tempo real no ERP.</p>
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">Gemini API Key</label>
-                            <input type="password" class="form-control form-control-sm" id="cfgGeminiApiKey" placeholder="Cole sua chave AIzaSy... aqui" onchange="salvarChaveGemini(this.value)">
-                        </div>
-                        <span class="badge bg-info bg-opacity-10 text-info border border-info p-2 text-start d-block" id="geminiStatusBadge">
-                            <i class="bi bi-info-circle me-1"></i> Digite a chave para ativar a inteligência generativa no sistema.
-                        </span>
-                    </div>
-
-                    <div class="card border-danger shadow-sm" style="max-width: 700px;">
-                        <div class="card-body p-3">
-                            <h6 class="fw-bold text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Reset de Dados de Teste</h6>
-                            <p class="text-muted small mb-2">Utilize este botão para apagar lançamentos demonstrativos antigos e deixar a base pronta para cadastrar a obra real.</p>
-                            <button class="btn btn-danger btn-sm fw-bold shadow-sm" onclick="limparBaseTeste()">
-                                <i class="bi bi-trash-fill me-1"></i> Limpar Dados de Teste
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <h4 class="fw-bold mb-3">Histórico de O.Ps</h4>
+            <div id="opsContainer" class="row g-3"></div>
         </div>
 
     </div>
-
-
-    <!-- CONTAINER DE NOTIFICAÇÕES TOAST -->
-    <div id="toastContainer"></div>
-
-    <!-- MODAL: PIN DE SEGURANÇA ADMINISTRADOR -->
-    <div class="modal fade" id="modalPinAdmin" tabindex="-1">
-        <div class="modal-dialog modal-sm">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header bg-dark text-white py-2">
-                    <h6 class="modal-title fw-bold"><i class="bi bi-lock-fill me-2"></i>Área Restrita Admin</h6>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body text-center">
-                    <p class="small text-muted mb-2">Digite o PIN do Administrador para acessar Parâmetros e Cadastros:</p>
-                    <input type="password" id="inputPinAcesso" class="form-control text-center fw-bold fs-4 mb-3" maxlength="4" placeholder="••••">
-                    <button class="btn btn-primary fw-bold w-100" onclick="validarPinAdmin()">Acessar Parâmetros</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: CADASTRAR NOVA OBRA -->
-    <div class="modal fade" id="modalNovaObra" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-building-add me-2"></i>Cadastrar Nova Obra / Contrato</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small">Nome da Obra</label>
-                        <input type="text" id="novoNomeObra" class="form-control" placeholder="Ex: RESIDENCIAL PARQUE CITY">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small">Código do Contrato</label>
-                        <input type="text" id="novoCodObra" class="form-control" placeholder="Ex: RBG260088">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small">Cliente / Construtora</label>
-                        <input type="text" id="novoClienteObra" class="form-control" placeholder="Ex: Sinco Engenharia">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-success fw-bold" onclick="salvarNovaObra()">Cadastrar Obra</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: ESTÚDIO DE CROQUIS -->
-    <div class="modal fade" id="modalCroquiBuilder" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header bg-info text-white">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-palette me-2"></i>Estúdio de Croquis & Imagens PNG / JPG</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="drop-zone mb-3" onclick="document.getElementById('fileCroquiInput').click()">
-                        <i class="bi bi-cloud-arrow-up text-warning fs-1 mb-2"></i>
-                        <h5 class="fw-bold text-dark mb-1">Selecione ou Arraste o Croqui (PNG / JPG)</h5>
-                        <p class="text-muted small mb-0">Imagens com fundo transparente ou desenhos em CAD exportados.</p>
-                        <input type="file" id="fileCroquiInput" class="d-none" accept="image/*" onchange="carregarImagemCroqui(event)">
-                    </div>
-                    <div id="previewCroquiArea" class="text-center d-none">
-                        <h6 class="fw-bold text-secondary mb-2">Prévia do Croqui Carregado:</h6>
-                        <img id="croquiImgPreview" src="" alt="Croqui" style="max-height: 220px; border-radius: 8px;" class="shadow-sm border p-2 bg-white">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: LEITOR E IMPORTADOR CEM (100) XML -->
-    <div class="modal fade" id="modalImportarCEM" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header bg-warning text-dark">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-filetype-xml me-2"></i>Leitor & Importador do Software CEM (100)</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body bg-light">
-                    <div class="alert alert-warning border-warning py-2 small mb-3">
-                        <i class="bi bi-info-circle-fill me-1"></i> O <strong>Software CEM (100)</strong> exporta a relação do projeto em arquivo XML contendo códigos de perfis, vidros e vãos.
-                    </div>
-                    <div class="drop-zone mb-3 bg-white" onclick="document.getElementById('cemXmlInput').click()">
-                        <i class="bi bi-file-code-fill text-warning fs-1 mb-2"></i>
-                        <h5 class="fw-bold text-dark mb-1">Selecione o Arquivo XML do CEM (100)</h5>
-                        <input type="file" id="cemXmlInput" class="d-none" accept=".xml" onchange="iniciarLeituraXMLCEM(event)">
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="small fw-bold text-secondary">Não tem um arquivo XML do CEM para testar agora?</span>
-                        <button class="btn btn-sm btn-outline-dark fw-bold" onclick="baixarExemploXMLCEM()">
-                            <i class="bi bi-download me-1"></i> Baixar XML Exemplo CEM (100)
-                        </button>
-                    </div>
-
-                    <div id="cemPreviewArea" class="d-none mt-3 p-3 bg-white rounded border shadow-sm">
-                        <h6 class="fw-bold text-primary mb-2"><i class="bi bi-check2-circle me-1"></i>Tipologias Identificadas no XML:</h6>
-                        <div class="table-responsive" style="max-height: 200px;">
-                            <table class="table table-sm table-striped align-middle mb-0" style="font-size: 0.8rem;">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>TAG</th>
-                                        <th>Tipologia / Descrição</th>
-                                        <th>Linha</th>
-                                        <th>Medidas ($L \times H$)</th>
-                                        <th class="text-center">Complexidade HH</th>
-                                        <th class="text-center">Qtd</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="cemPreviewTableBody"></tbody>
-                            </table>
-                        </div>
-                        <div class="mt-3 text-end">
-                            <button class="btn btn-success fw-bold shadow-sm" onclick="confirmarImportacaoCEMXML()">
-                                <i class="bi bi-cloud-arrow-down-fill me-1"></i> Confirmar e Inserir Itens no Contrato
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: DRIVE DA OBRA -->
-    <div class="modal fade" id="modalDriveObra" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-google me-2"></i>Plantas Baixas & Google Drive</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small">Link da Pasta do Google Drive / OneDrive da Obra</label>
-                        <input type="url" id="driveLinkInput" class="form-control" placeholder="https://drive.google.com/drive/folders/...">
-                    </div>
-                    <button class="btn btn-primary fw-bold w-100 mb-3 shadow-sm" onclick="salvarLinkDrive()">
-                        <i class="bi bi-save me-1"></i> Salvar Link do Repositório
-                    </button>
-                    <hr>
-                    <div id="driveLinkArea" class="d-none">
-                        <a id="btnOpenDrive" href="#" target="_blank" class="btn btn-outline-success fw-bold w-100 shadow-sm">
-                            <i class="bi bi-folder-symlink me-1"></i> Abrir Pasta de Plantas e DWGs no Google Drive
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- BOOTSTRAP 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        const SUPABASE_URL = "https://jlplzxgojefbwohjhyuu.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_Ec0zb3yQF48_VMNOcB5_vw_vcEVwcXb";
-        
-        let supabaseClient = null;
-        if (window.supabase && window.supabase.createClient) {
-            try {
-                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            } catch (err) {
-                console.warn("Supabase em modo fallback local:", err);
-            }
-        }
+        // CONFIGURAÇÃO SUPABASE
+        const SB_URL = 'https://jlplzxgojefbwohjhyuu.supabase.co';
+        const SB_KEY = 'sb_publishable_Ec0zb3yQF48_VMNOcB5_vw_vcEVwcXb';
+        const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-        // BASE DE DADOS LOCAL E CONTINGÊNCIA
-        let dadosProjetos = {
-            "RBG250036": {
-                nome: "INFINITY BROOKLIN",
-                cliente: "Sinco Engenharia",
-                driveLink: "",
-                itens: [
-                    { id: "AL-101", desc: "Janela de Correr 2 Folhas", tipo: "Janela", linha: "GOLD", largura_proj: 1200, altura_proj: 1200, l_real: 1192, h_real: 1190, qtd_contrato: 40, qtd_liberada: 15, qtd_produzida: 10, status: "Em Produção", projetista: "Mariano Moraes", dtEntrada: "20/07/2026", hrsCad: 1.5, hrsCem: 1.0 },
-                    { id: "AL-102", desc: "Porta de Giro com Bandeira", tipo: "Porta", linha: "GOLD", largura_proj: 900, altura_proj: 2100, l_real: 895, h_real: 2095, qtd_contrato: 12, qtd_liberada: 12, qtd_produzida: 12, status: "Finalizado", projetista: "Mariano Moraes", dtEntrada: "18/07/2026", hrsCad: 3.0, hrsCem: 1.5 },
-                    { id: "AL-103", desc: "Maxim-Ar Banheiro", tipo: "Maxim-Ar", linha: "SUPREMA", largura_proj: 600, altura_proj: 600, l_real: 595, h_real: 590, qtd_contrato: 20, qtd_liberada: 5, qtd_produzida: 5, status: "Em Produção", projetista: "Eng. Roberto", dtEntrada: "22/07/2026", hrsCad: 1.5, hrsCem: 0.5 },
-                    { id: "FA-201", desc: "Fachada Pele de Vidro Stick", tipo: "Fachada", linha: "FACHADA_GRID", largura_proj: 1500, altura_proj: 2400, l_real: null, h_real: null, qtd_contrato: 80, qtd_liberada: 0, qtd_produzida: 0, status: "Pendente", projetista: "Mariano Moraes", dtEntrada: "24/07/2026", hrsCad: 18.0, hrsCem: 6.0 },
-                    { id: "GC-301", desc: "Guarda-Corpo de Vidro e Alumínio", tipo: "Guarda-Corpo", linha: "SLIM", largura_proj: 2000, altura_proj: 1100, l_real: null, h_real: null, qtd_contrato: 30, qtd_liberada: 0, qtd_produzida: 0, status: "Pendente", projetista: "Eng. Roberto", dtEntrada: "25/07/2026", hrsCad: 8.0, hrsCem: 2.0 }
-                ]
-            }
+        let db_projetos = [];
+        let db_itens = [];
+        let idAtivo = null;
+
+        window.onload = async () => {
+            await carregarObras();
         };
 
-        let cadastrosMaster = {
-            projetistas: [
-                { id: 1, nome: "Mariano Moraes", cargo: "Projetista Sênior CAD/CEM", capDiaria: 8 },
-                { id: 2, nome: "Eng. Roberto", cargo: "Calculista Estrutural NBR 10821", capDiaria: 8 }
-            ],
-            clientes: [
-                { id: 1, nome: "Sinco Engenharia", cnpj: "12.345.678/0001-90", fone: "(11) 3333-4444" }
-            ]
-        };
-
-        let parametrosSistema = {
-            kerfSerra: 5,
-            folgaVidro: 10,
-            pinAdmin: "1234",
-            geminiApiKey: localStorage.getItem('GEMINI_API_KEY') || ""
-        };
-
-        let projetoAtivoID = "RBG250036";
-        let tempParsedCEMItems = [];
-        let itemSelecionadoParaMedicao = null;
-        let adminAutenticado = false;
-
-        // MODAIS BOOTSTRAP
-        let modalNovaObraObj, modalCroquiObj, modalCemObj, modalDriveObj, modalPinObj;
-
-        document.addEventListener('DOMContentLoaded', function() {
-            modalNovaObraObj = new bootstrap.Modal(document.getElementById('modalNovaObra'));
-            modalCroquiObj = new bootstrap.Modal(document.getElementById('modalCroquiBuilder'));
-            modalCemObj = new bootstrap.Modal(document.getElementById('modalImportarCEM'));
-            modalDriveObj = new bootstrap.Modal(document.getElementById('modalDriveObra'));
-            modalPinObj = new bootstrap.Modal(document.getElementById('modalPinAdmin'));
-
-            atualizarSelectGlobal();
-            carregarProjeto(projetoAtivoID);
-            renderCadastrosMaster();
-            sincronizarComSupabase();
-
-            if (parametrosSistema.geminiApiKey) {
-                document.getElementById('cfgGeminiApiKey').value = parametrosSistema.geminiApiKey;
-                salvarChaveGemini(parametrosSistema.geminiApiKey);
-            }
-        });
-
-        // NOTIFICAÇÃO TOAST VISUAL (SEM ALERT)
-        function mostrarNotificacao(mensagem, tipo = 'success') {
-            const container = document.getElementById('toastContainer');
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${tipo} alert-dismissible fade show shadow-lg border-0`;
-            alertDiv.role = 'alert';
-            alertDiv.innerHTML = `
-                <i class="bi bi-info-circle-fill me-2"></i> ${mensagem}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            container.appendChild(alertDiv);
-            setTimeout(() => {
-                alertDiv.classList.remove('show');
-                setTimeout(() => alertDiv.remove(), 300);
-            }, 4000);
+        async function carregarObras() {
+            const { data } = await _supabase.from('obras').select('*').order('created_at', {ascending: false});
+            db_projetos = data || [];
+            const sel = document.getElementById('projetoSelector');
+            sel.innerHTML = db_projetos.map(p => `<option value="${p.id}">${p.codigo} - ${p.nome}</option>`).join('');
+            if(db_projetos.length > 0) mudarProjeto(db_projetos[0].id);
         }
 
-        function salvarChaveGemini(chave) {
-            parametrosSistema.geminiApiKey = chave.trim();
-            localStorage.setItem('GEMINI_API_KEY', chave.trim());
-            if (chave.trim()) {
-                document.getElementById('geminiStatusBadge').className = "badge bg-success bg-opacity-10 text-success border border-success p-2 text-start d-block";
-                document.getElementById('geminiStatusBadge').innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Chave do Gemini configurada!';
-            }
+        async function mudarProjeto(id) {
+            idAtivo = id;
+            document.getElementById('ai-loader').style.display = 'flex';
+            const { data } = await _supabase.from('itens').select('*').eq('obra_id', id).order('tag');
+            db_itens = data || [];
+            atualizarTelas();
+            document.getElementById('ai-loader').style.display = 'none';
         }
 
-        async function sincronizarComSupabase() {
-            if (!supabaseClient) return;
-            try {
-                const { data, error } = await supabaseClient.from('projetos').select('*');
-                if (!error && data && data.length > 0) {
-                    document.getElementById('connStatus').innerHTML = '<i class="bi bi-cloud-check-fill me-1"></i> Supabase Sincronizado';
-                }
-            } catch (err) {
-                console.warn("Supabase operando em modo híbrido.");
-            }
+        function atualizarTelas() {
+            renderEditor();
+            renderFiscal();
+            renderEngenharia();
+            renderDashboard();
+            renderOPs();
         }
 
-        // CONTROLADOR DE ABAS E SEGURANÇA
-        function abrirAba(abaId) {
+        // --- FUNÇÕES DE INTERFACE ---
+        function abrirAba(id) {
             document.querySelectorAll('.b-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
-
-            const tabEl = document.getElementById('tab-' + abaId);
-            const screenEl = document.getElementById('screen-' + abaId);
-
-            if (tabEl) tabEl.classList.add('active');
-            if (screenEl) screenEl.classList.add('active');
+            event.currentTarget.classList.add('active');
+            document.getElementById('screen-'+id).classList.add('active');
         }
 
-        function tentarAcessarParametros() {
-            if (adminAutenticado) {
-                abrirAba('parametros');
-            } else {
-                document.getElementById('inputPinAcesso').value = "";
-                modalPinObj.show();
-            }
-        }
-
-        function validarPinAdmin() {
-            const pin = document.getElementById('inputPinAcesso').value;
-            if (pin === parametrosSistema.pinAdmin) {
-                adminAutenticado = true;
-                document.getElementById('lockIconParam').className = "bi bi-unlock-fill ms-1 text-success";
-                modalPinObj.hide();
-                abrirAba('parametros');
-                mostrarNotificacao("Sessão de Administrador ativada!", "success");
-            } else {
-                mostrarNotificacao("PIN incorreto! Tente novamente.", "danger");
-            }
-        }
-
-        function toggleSplitScreen() {
-            const container = document.getElementById('mainContainer');
-            container.classList.toggle('split-view-mode');
-            const btn = document.getElementById('btnSplitScreen');
-            if (container.classList.contains('split-view-mode')) {
-                btn.classList.replace('btn-dark', 'btn-danger');
-                btn.innerHTML = '<i class="bi bi-x-circle me-1"></i> Sair do Painel Duplo';
-                document.getElementById('screen-tecnica').classList.add('active');
-            } else {
-                btn.classList.replace('btn-danger', 'btn-dark');
-                btn.innerHTML = '<i class="bi bi-layout-split me-1"></i> Painel Duplo';
-                abrirAba('dashboard');
-            }
-        }
-
-        function calcularComplexidadeTipologia(tipo, desc) {
-            let t = (tipo || desc || "").toLowerCase();
-            if (t.includes("fachada") || t.includes("pele") || t.includes("structural") || t.includes("grid"))
-                return { peso: 5.0, label: "5.0x (Altíssima - CAD do Zero)", class: "bg-danger text-white", stdCadHours: 18.0, stdCemHours: 6.0 };
-            if (t.includes("guarda") || t.includes("corpo") || t.includes("slim"))
-                return { peso: 4.0, label: "4.0x (Alta Dificuldade)", class: "bg-warning text-dark", stdCadHours: 8.0, stdCemHours: 2.5 };
-            if (t.includes("porta") || t.includes("giro") || t.includes("especial"))
-                return { peso: 3.0, label: "3.0x (Média-Alta)", class: "bg-info text-dark", stdCadHours: 4.0, stdCemHours: 1.5 };
-            if (t.includes("maxim") || t.includes("ar"))
-                return { peso: 1.5, label: "1.5x (Moderada)", class: "bg-secondary text-white", stdCadHours: 2.0, stdCemHours: 0.8 };
-            return { peso: 1.0, label: "1.0x (Padrão Homologado)", class: "bg-success text-white", stdCadHours: 1.5, stdCemHours: 0.5 };
-        }
-
-        function calcularProjecaoPrazosEngenharia() {
-            const proj = dadosProjetos[projetoAtivoID];
-            if (!proj) return;
-
-            let totalCad = 0;
-            let totalCem = 0;
-
-            proj.itens.forEach(item => {
-                let comp = calcularComplexidadeTipologia(item.tipo, item.desc);
-                totalCad += (item.hrsCad || comp.stdCadHours);
-                totalCem += (item.hrsCem || comp.stdCemHours);
-            });
-
-            let totalHorasUteis = totalCad + totalCem;
-            let diasUteisProjetista = (totalHorasUteis / 8.0).toFixed(1);
-
-            document.getElementById('lblTotalCadHours').textContent = totalCad.toFixed(1) + "h";
-            document.getElementById('lblTotalCemHours').textContent = totalCem.toFixed(1) + "h";
-            document.getElementById('lblTotalDaysProjection').textContent = diasUteisProjetista + " Dias";
-
-            document.getElementById('lblIaLeadTimeProjection').innerHTML = `
-                <strong>Análise da Obra ${proj.nome}:</strong> Carga total estimada em <strong>${totalHorasUteis.toFixed(1)} Horas Úteis de Engenharia</strong>. 
-                Considerando 1 projetista dedicado (8h/dia), a projeção de entrega é de <strong>${diasUteisProjetista} dias úteis</strong>.
-            `;
-        }
-
-        function gerarCroquiSVG(tipo, linha, w, h, customImg) {
-            if (customImg) {
-                return `<div class="croqui-container"><img src="${customImg}" alt="Croqui"></div>`;
-            }
-            let t = (tipo || "").toLowerCase();
-            let color = "#0d6efd";
-            if (t.includes("fachada")) color = "#212529";
-            if (t.includes("guarda")) color = "#6c757d";
-
-            return `<div class="croqui-container">
-                <svg width="80" height="45" viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="5" y="5" width="90" height="50" fill="#e9ecef" stroke="${color}" stroke-width="3"/>
-                    <line x1="50" y1="5" x2="50" y2="55" stroke="${color}" stroke-width="2"/>
-                </svg>
-            </div>`;
-        }
-
-        function renderTableDashboard() {
-            const proj = dadosProjetos[projetoAtivoID];
-            if (!proj) return;
-
-            const tbody = document.getElementById('dashTableBody');
-            tbody.innerHTML = "";
-
-            let totalContrato = 0, totalLiberado = 0, totalProducao = 0;
-            let somaPesoComplexidade = 0;
-
-            const search = (document.getElementById('dashSearchInput').value || "").toLowerCase();
-            const filterStatus = document.getElementById('dashStatusFilter').value;
-
-            proj.itens.forEach(item => {
-                totalContrato += item.qtd_contrato;
-                totalLiberado += item.qtd_liberada;
-                totalProducao += item.qtd_produzida;
-
-                let comp = calcularComplexidadeTipologia(item.tipo, item.desc);
-                somaPesoComplexidade += (comp.peso * item.qtd_contrato);
-
-                if (search && !item.id.toLowerCase().includes(search) && !item.desc.toLowerCase().includes(search)) return;
-                if (filterStatus !== "Todos" && item.status !== filterStatus) return;
-
-                let pct = item.qtd_contrato > 0 ? Math.round((item.qtd_liberada / item.qtd_contrato) * 100) : 0;
-                let croquiHtml = gerarCroquiSVG(item.tipo, item.linha, item.largura_proj, item.altura_proj, item.croquiImg);
-
-                let statusClass = "bg-secondary";
-                if (item.status === "Pendente") statusClass = "status-pendente";
-                if (item.status === "Área Técnica") statusClass = "status-tecnica";
-                if (item.status === "Em Produção") statusClass = "status-producao";
-                if (item.status === "Finalizado") statusClass = "status-finalizado";
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="ps-3 fw-bold text-primary">${item.id}</td>
-                    <td>${croquiHtml}</td>
-                    <td><strong>${item.desc}</strong><br><small class="text-muted">${item.tipo}</small></td>
-                    <td><span class="badge bg-secondary">${item.linha}</span></td>
-                    <td class="text-center"><span class="badge ${comp.class}">${comp.label}</span></td>
-                    <td class="text-center">${item.largura_proj} x ${item.altura_proj} mm</td>
-                    <td class="text-center fw-bold text-dark">${item.l_real ? item.l_real + ' x ' + item.h_real + ' mm' : '-'}</td>
-                    <td class="text-center fw-bold">${item.qtd_contrato}</td>
-                    <td class="text-center text-success fw-bold">${item.qtd_liberada}</td>
-                    <td class="text-center">
-                        <div class="progress" style="height: 12px;">
-                            <div class="progress-bar bg-success" style="width: ${pct}%">${pct}%</div>
-                        </div>
-                    </td>
-                    <td class="text-center"><span class="badge ${statusClass} px-3 py-1">${item.status}</span></td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            // KPIS
-            document.getElementById('kpiTotalContrato').textContent = totalContrato;
-            document.getElementById('kpiLiberados').textContent = totalLiberado;
-            document.getElementById('kpiProducao').textContent = totalProducao;
-            document.getElementById('kpiRestante').textContent = totalContrato - totalLiberado;
-
-            document.getElementById('badgeTotalTipos').textContent = proj.itens.length + " Tipologias";
-            document.getElementById('badgeTotalPecas').textContent = totalContrato + " Peças Totais";
-
-            let mediaComp = totalContrato > 0 ? (somaPesoComplexidade / totalContrato).toFixed(1) : "1.0";
-            document.getElementById('lblFatorDificuldade').textContent = `${mediaComp}x (${mediaComp > 3.0 ? 'Alta Carga de CAD' : 'Padrão Homologado'})`;
-
-            renderTecnicaTracking();
-            renderFiscalTable();
-            renderTecnicaInbox();
-            renderBatchTable();
-            calcularProjecaoPrazosEngenharia();
-        }
-
-        function renderTecnicaTracking() {
-            const proj = dadosProjetos[projetoAtivoID];
-            if (!proj) return;
-
-            const tbody = document.getElementById('tecnicaTrackingTableBody');
-            tbody.innerHTML = "";
-
-            proj.itens.forEach(item => {
-                let comp = calcularComplexidadeTipologia(item.tipo, item.desc);
-                let cadEst = item.hrsCad || comp.stdCadHours;
-                let cemEst = item.hrsCem || comp.stdCemHours;
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="ps-3 fw-bold text-primary">${item.id}</td>
-                    <td><strong>${item.desc}</strong><br><span class="badge bg-secondary">${item.linha}</span></td>
-                    <td><i class="bi bi-person-badge me-1"></i>${item.projetista || "Mariano Moraes"}</td>
-                    <td class="text-center">${item.dtEntrada || "24/07/2026"}</td>
-                    <td class="text-center text-success fw-bold">26/07/2026</td>
-                    <td class="text-center fw-bold text-primary">${cadEst}h</td>
-                    <td class="text-center fw-bold text-info">${cemEst}h</td>
-                    <td class="text-center"><span class="badge bg-info text-dark">${item.status === 'Pendente' ? 'Em Detalhamento CAD' : 'Liberação Concluída'}</span></td>
-                    <td class="text-center">
-                        <button class="btn btn-sm btn-outline-primary py-0 px-2 fw-bold" onclick="mostrarNotificacao('SLA da TAG ${item.id} registrado!')">Concluir</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function renderFiscalTable() {
-            const proj = dadosProjetos[projetoAtivoID];
-            if (!proj) return;
-
-            const tbody = document.getElementById('fiscalContratoTableBody');
-            tbody.innerHTML = "";
-
-            proj.itens.forEach(item => {
-                let saldo = item.qtd_contrato - item.qtd_liberada;
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="ps-3 fw-bold text-primary">${item.id}</td>
-                    <td><strong>${item.desc}</strong><br><span class="badge bg-secondary">${item.linha}</span></td>
-                    <td class="text-center">${item.largura_proj} x ${item.altura_proj} mm</td>
-                    <td class="text-center"><span class="fw-bold">${item.qtd_contrato}</span> / <span class="text-danger fw-bold">${saldo} pend.</span></td>
-                    <td class="text-center">
-                        <button class="btn btn-sm btn-warning fw-bold px-2 py-1 shadow-sm" onclick="medirVaoItem('${item.id}', '${item.desc}', ${item.largura_proj}, ${item.altura_proj}, ${saldo})">
-                            <i class="bi bi-ruler me-1"></i> Medir Vão
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function medirVaoItem(tag, desc, largProj, altProj, saldo) {
-            itemSelecionadoParaMedicao = { tag, desc, largProj, altProj, saldo };
-            document.getElementById('fiscalFormTag').value = `${tag} - ${desc}`;
-            document.getElementById('fiscalFormLarguraReal').value = largProj - 10;
-            document.getElementById('fiscalFormAlturaReal').value = altProj - 10;
-            document.getElementById('fiscalFormQtdLiberar').value = saldo;
-
-            calcularFolgasFiscal();
-
-            document.getElementById('iaFiscalAdvice').innerHTML = `
-                <strong>Aferição da TAG ${tag}:</strong> O contrato prevê <strong>${saldo} peças pendentes</strong>. 
-                Liberando o lote completo de ${saldo} peças, a fábrica otimiza o aproveitamento de barras de 6.0m.
-            `;
-        }
-
-        function calcularFolgasFiscal() {
-            if (!itemSelecionadoParaMedicao) return;
-            const lReal = parseInt(document.getElementById('fiscalFormLarguraReal').value) || 0;
-            const hReal = parseInt(document.getElementById('fiscalFormAlturaReal').value) || 0;
-            const folgaL = itemSelecionadoParaMedicao.largProj - lReal;
-            const folgaH = itemSelecionadoParaMedicao.altProj - hReal;
-
-            document.getElementById('lblFolgaL').textContent = `Projeto: ${itemSelecionadoParaMedicao.largProj} mm (Folga: ${folgaL}mm)`;
-            document.getElementById('lblFolgaH').textContent = `Projeto: ${itemSelecionadoParaMedicao.altProj} mm (Folga: ${folgaH}mm)`;
-        }
-
-        async function salvarMedicaoFiscal() {
-            if (!itemSelecionadoParaMedicao) {
-                mostrarNotificacao("Selecione um item da tabela do contrato para medir!", "warning");
-                return;
-            }
-            const lReal = parseInt(document.getElementById('fiscalFormLarguraReal').value);
-            const hReal = parseInt(document.getElementById('fiscalFormAlturaReal').value);
-            const qtd = parseInt(document.getElementById('fiscalFormQtdLiberar').value);
-
-            if (!lReal || !hReal || !qtd) {
-                mostrarNotificacao("Preencha a Largura Real, Altura Real e a Quantidade!", "warning");
-                return;
-            }
-
-            const proj = dadosProjetos[projetoAtivoID];
-            const item = proj.itens.find(i => i.id === itemSelecionadoParaMedicao.tag);
-            if (item) {
-                item.l_real = lReal;
-                item.h_real = hReal;
-                item.qtd_liberada += qtd;
-                if (item.qtd_liberada >= item.qtd_contrato) {
-                    item.status = "Em Produção";
-                }
-            }
-
-            if (supabaseClient) {
-                try {
-                    await supabaseClient.from('medicoes').insert([
-                        { tag: itemSelecionadoParaMedicao.tag, l_real: lReal, h_real: hReal, quantidade: qtd, projeto_id: projetoAtivoID }
-                    ]);
-                } catch (e) { console.info("Salvo localmente."); }
-            }
-
-            renderTableDashboard();
-            mostrarNotificacao(`Medição da TAG ${itemSelecionadoParaMedicao.tag} enviada com sucesso! ${qtd} peças liberadas.`, "success");
-        }
-
-        function renderTecnicaInbox() {
-            const tbody = document.getElementById('tecnicaInboxTableBody');
-            tbody.innerHTML = `
+        function renderEditor() {
+            const tbody = document.getElementById('editorTableBody');
+            tbody.innerHTML = db_itens.map(i => `
                 <tr>
-                    <td class="ps-3 fw-bold text-primary">REQ-001</td>
-                    <td><strong>AL-101</strong> (Janela 2F)</td>
-                    <td>Fiscal Carlos</td>
-                    <td class="text-center fw-bold">1192 x 1190 mm</td>
-                    <td class="text-center fw-bold text-success">15 pçs</td>
-                    <td>24/07/2026</td>
-                    <td class="text-center">
-                        <button class="btn btn-sm btn-success fw-bold shadow-sm me-1" onclick="mostrarNotificacao('Medição homologada pela Engenharia!', 'success')">
-                            <i class="bi bi-check-circle me-1"></i> Homologar
-                        </button>
-                    </td>
+                    <td><input class="table-inline-input fw-bold" value="${i.tag}" onblur="saveItem('${i.id}', 'tag', this.value)"></td>
+                    <td><input class="table-inline-input" value="${i.cod}" onblur="saveItem('${i.id}', 'cod', this.value)"></td>
+                    <td><input class="table-inline-input" type="number" value="${i.l}" onblur="saveItem('${i.id}', 'l', this.value)"></td>
+                    <td><input class="table-inline-input" type="number" value="${i.h}" onblur="saveItem('${i.id}', 'h', this.value)"></td>
+                    <td><input class="table-inline-input" type="number" value="${i.qtd_c}" onblur="saveItem('${i.id}', 'qtd_c', this.value)"></td>
+                    <td><input class="table-inline-input" value="${i.cor}" onblur="saveItem('${i.id}', 'cor', this.value)"></td>
+                    <td><button class="btn btn-sm" onclick="delItem('${i.id}')">❌</button></td>
                 </tr>
+            `).join('');
+        }
+
+        async function saveItem(id, campo, valor) {
+            await _supabase.from('itens').update({ [campo]: valor }).eq('id', id);
+        }
+
+        async function addItem() {
+            await _supabase.from('itens').insert([{ obra_id: idAtivo, tag: 'NOVA', cod: 'TIPOLOGIA', l: 1000, h: 1000 }]);
+            mudarProjeto(idAtivo);
+        }
+
+        function renderFiscal() {
+            const tbody = document.getElementById('fiscalTableBody');
+            tbody.innerHTML = db_itens.map(i => `
+                <tr>
+                    <td class="fw-bold">${i.tag}</td>
+                    <td class="text-danger fw-bold">${i.qtd_c - i.qtd_l}</td>
+                    <td><input type="number" class="form-control form-control-sm" id="l_r_${i.id}" value="${i.l_r || i.l}"></td>
+                    <td><input type="number" class="form-control form-control-sm" id="h_r_${i.id}" value="${i.h_r || i.h}"></td>
+                    <td><input type="number" class="form-control form-control-sm border-primary" id="q_l_${i.id}" placeholder="0"></td>
+                    <td><button class="btn btn-sm btn-success" onclick="liberar('${i.id}')">Liberar</button></td>
+                </tr>
+            `).join('');
+        }
+
+        async function liberar(id) {
+            const q = parseInt(document.getElementById('q_l_'+id).value) || 0;
+            const item = db_itens.find(x => x.id === id);
+            await _supabase.from('itens').update({
+                qtd_l: item.qtd_l + q,
+                l_r: document.getElementById('l_r_'+id).value,
+                h_r: document.getElementById('h_r_'+id).value
+            }).eq('id', id);
+            mudarProjeto(idAtivo);
+        }
+
+        function renderEngenharia() {
+            const tbody = document.getElementById('engTableBody');
+            tbody.innerHTML = db_itens.filter(i => (i.qtd_l - i.qtd_op) > 0).map(i => `
+                <tr>
+                    <td><input type="checkbox" class="op-check" value="${i.id}"></td>
+                    <td>${i.tag}</td>
+                    <td>${i.l_r} x ${i.h_r}</td>
+                    <td class="fw-bold text-primary">Fila: ${i.qtd_l - i.qtd_op} pçs</td>
+                </tr>
+            `).join('');
+        }
+
+        async function gerarOP() {
+            const checks = document.querySelectorAll('.op-check:checked');
+            const itensOP = [];
+            for (let c of checks) {
+                const item = db_itens.find(x => x.id === c.value);
+                const qtdPendente = item.qtd_l - item.qtd_op;
+                itensOP.push({...item, qtd_na_op: qtdPendente});
+                await _supabase.from('itens').update({ qtd_op: item.qtd_op + qtdPendente }).eq('id', item.id);
+            }
+            await _supabase.from('ordens_producao').insert([{
+                nome: document.getElementById('opNomeInput').value || 'OP-Geral',
+                obra_id: idAtivo,
+                itens_json: itensOP
+            }]);
+            mudarProjeto(idAtivo);
+        }
+
+        async function renderOPs() {
+            const { data } = await _supabase.from('ordens_producao').select('*').eq('obra_id', idAtivo).order('data', {ascending:false});
+            const container = document.getElementById('opsContainer');
+            container.innerHTML = (data || []).map(op => `
+                <div class="col-md-4">
+                    <div class="card p-3 shadow-sm border-primary">
+                        <h6 class="fw-bold">${op.nome}</h6>
+                        <small>${new Date(op.data).toLocaleDateString()}</small>
+                        <button class="btn btn-sm btn-dark mt-2" onclick="imprimir('${op.id}')">Imprimir Etiquetas</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function imprimir(opId) {
+            const { data } = await _supabase.from('ordens_producao').select('*').eq('id', opId).single();
+            const printArea = document.getElementById('print-section');
+            printArea.innerHTML = '';
+            data.itens_json.forEach(item => {
+                for(let i=1; i<=item.qtd_na_op; i++) {
+                    const qr = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=TAG:${item.tag}|DIM:${item.l_r}x${item.h_r}`;
+                    printArea.innerHTML += `
+                        <div class="etiqueta">
+                            <div style="font-size:24px; font-weight:bold">${item.tag}</div>
+                            <div style="font-size:18px">${item.l_r} x ${item.h_r}</div>
+                            <div style="display:flex; justify-content:space-between">
+                                <span>${item.cor}</span>
+                                <img src="${qr}" style="width:60px">
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            window.print();
+        }
+
+        function renderDashboard() {
+            const container = document.getElementById('kanbanContainer');
+            const total = db_itens.reduce((a,b) => a + b.qtd_c, 0);
+            const lib = db_itens.reduce((a,b) => a + b.qtd_l, 0);
+            const op = db_itens.reduce((a,b) => a + b.qtd_op, 0);
+            const pLib = Math.round((lib/total)*100) || 0;
+            const pOp = Math.round((op/total)*100) || 0;
+
+            container.innerHTML = `
+                <div class="col-md-6">
+                    <div class="card p-4 shadow-sm">
+                        <h5>Progresso de Medição: ${pLib}%</h5>
+                        <div class="progress mt-2"><div class="progress-bar bg-success" style="width:${pLib}%"></div></div>
+                        <h5 class="mt-4">Progresso de Produção: ${pOp}%</h5>
+                        <div class="progress mt-2"><div class="progress-bar" style="width:${pOp}%"></div></div>
+                    </div>
+                </div>
             `;
         }
 
-        function renderBatchTable() {
-            const proj = dadosProjetos[projetoAtivoID];
-            if (!proj) return;
-            const tbody = document.getElementById('batchTableBody');
-            tbody.innerHTML = "";
-
-            proj.itens.forEach((item, index) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="ps-3"><input type="text" class="form-control form-control-sm fw-bold text-primary" value="${item.id}"></td>
-                    <td><input type="text" class="form-control form-control-sm" value="${item.desc}"></td>
-                    <td>
-                        <select class="form-select form-select-sm">
-                            <option ${item.linha === 'GOLD' ? 'selected' : ''}>GOLD</option>
-                            <option ${item.linha === 'SUPREMA' ? 'selected' : ''}>SUPREMA</option>
-                            <option ${item.linha === 'FACHADA_GRID' ? 'selected' : ''}>FACHADA_GRID</option>
-                            <option ${item.linha === 'SLIM' ? 'selected' : ''}>SLIM</option>
-                        </select>
-                    </td>
-                    <td><input type="number" class="form-control form-control-sm text-center" value="${item.largura_proj}"></td>
-                    <td><input type="number" class="form-control form-control-sm text-center" value="${item.altura_proj}"></td>
-                    <td><input type="number" class="form-control form-control-sm text-center fw-bold" value="${item.qtd_contrato}"></td>
-                    <td class="text-center">
-                        <button class="btn btn-sm btn-outline-danger" onclick="removerLinhaLote(${index})"><i class="bi bi-trash"></i></button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function adicionarLinhaLote() {
-            const proj = dadosProjetos[projetoAtivoID];
-            if (!proj) return;
-            proj.itens.push({
-                id: "TAG-NOVA",
-                desc: "Nova Tipologia de Esquadria",
-                tipo: "Janela",
-                linha: "GOLD",
-                largura_proj: 1000,
-                altura_proj: 1000,
-                l_real: null,
-                h_real: null,
-                qtd_contrato: 10,
-                qtd_liberada: 0,
-                qtd_produzida: 0,
-                status: "Pendente"
-            });
-            renderTableDashboard();
-        }
-
-        function removerLinhaLote(index) {
-            const proj = dadosProjetos[projetoAtivoID];
-            if (!proj) return;
-            proj.itens.splice(index, 1);
-            renderTableDashboard();
-        }
-
-        function salvarLoteBase() {
-            renderTableDashboard();
-            mostrarNotificacao("Lote salvo na base da obra!", "success");
-        }
-
-        // CEM (100) XML IMPORT
-        function abrirModalImportadorCEM() {
-            document.getElementById('cemPreviewArea').classList.add('d-none');
-            document.getElementById('cemPreviewTableBody').innerHTML = "";
-            tempParsedCEMItems = [];
-            modalCemObj.show();
-        }
-
-        function iniciarLeituraXMLCEM(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const xmlText = e.target.result;
-                try {
-                    const parser = new DOMParser();
-                    const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-                    const esquadrias = xmlDoc.getElementsByTagName("Esquadria");
-
-                    tempParsedCEMItems = [];
-                    const tbody = document.getElementById('cemPreviewTableBody');
-                    tbody.innerHTML = "";
-
-                    for (let i = 0; i < esquadrias.length; i++) {
-                        let itemNode = esquadrias[i];
-                        let tag = itemNode.getElementsByTagName("CodigoTag")[0]?.textContent || ("CEM-" + (i + 1));
-                        let tipo = itemNode.getElementsByTagName("Tipologia")[0]?.textContent || "Janela de Correr";
-                        let desc = itemNode.getElementsByTagName("Descricao")[0]?.textContent || tipo;
-                        let linha = itemNode.getElementsByTagName("Linha")[0]?.textContent || "GOLD";
-                        let larg = parseInt(itemNode.getElementsByTagName("Largura")[0]?.textContent) || 1000;
-                        let alt = parseInt(itemNode.getElementsByTagName("Altura")[0]?.textContent) || 1000;
-                        let qtd = parseInt(itemNode.getElementsByTagName("Quantidade")[0]?.textContent) || 1;
-
-                        let comp = calcularComplexidadeTipologia(tipo, desc);
-
-                        tempParsedCEMItems.push({
-                            id: tag,
-                            desc: desc,
-                            tipo: tipo,
-                            linha: linha,
-                            largura_proj: larg,
-                            altura_proj: alt,
-                            l_real: null,
-                            h_real: null,
-                            qtd_contrato: qtd,
-                            qtd_liberada: 0,
-                            qtd_produzida: 0,
-                            status: "Pendente"
-                        });
-
-                        tbody.innerHTML += `
-                            <tr>
-                                <td class="fw-bold text-primary">${tag}</td>
-                                <td><strong>${desc}</strong><br><small class="text-muted">${tipo}</small></td>
-                                <td><span class="badge bg-secondary">${linha}</span></td>
-                                <td>${larg} x ${alt} mm</td>
-                                <td class="text-center"><span class="badge ${comp.class}">${comp.label}</span></td>
-                                <td class="text-center fw-bold">${qtd} pçs</td>
-                            </tr>
-                        `;
-                    }
-
-                    document.getElementById('cemPreviewArea').classList.remove('d-none');
-                } catch (err) {
-                    mostrarNotificacao("Erro ao ler estrutura do XML do CEM (100).", "danger");
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        function confirmarImportacaoCEMXML() {
-            if (tempParsedCEMItems.length === 0) return;
-            const proj = dadosProjetos[projetoAtivoID];
-            tempParsedCEMItems.forEach(item => proj.itens.push(item));
-            renderTableDashboard();
-            modalCemObj.hide();
-            mostrarNotificacao(`${tempParsedCEMItems.length} tipologias importadas do CEM (100)!`, "success");
-        }
-
-        function baixarExemploXMLCEM() {
-            const xmlSample = `<?xml version="1.0" encoding="UTF-8"?>
-<ProjetoEsquadrias>
-    <Obra>INFINITY BROOKLIN</Obra>
-    <Esquadrias>
-        <Esquadria>
-            <CodigoTag>AL-105</CodigoTag>
-            <Tipologia>Janela de Correr 2 Folhas</Tipologia>
-            <Descricao>Janela de Correr Sacada Gourmet</Descricao>
-            <Linha>GOLD</Linha>
-            <Largura>1400</Largura>
-            <Altura>1200</Altura>
-            <Quantidade>25</Quantidade>
-        </Esquadria>
-    </Esquadrias>
-</ProjetoEsquadrias>`;
-
-            const blob = new Blob([xmlSample], { type: 'text/xml' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'exemplo_projeto_software_cem100.xml';
-            link.click();
-        }
-
-        function abrirModalCroquiBuilder() { modalCroquiObj.show(); }
-        function carregarImagemCroqui(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('croquiImgPreview').src = e.target.result;
-                    document.getElementById('previewCroquiArea').classList.remove('d-none');
-                };
-                reader.readAsDataURL(file);
+        async function novaObra() {
+            const cod = prompt("Código da Obra (ex: RBG 26-0001):");
+            const nome = prompt("Nome da Obra:");
+            if(cod && nome) {
+                await _supabase.from('obras').insert([{codigo: cod, nome: nome, projetista: 'Engenharia'}]);
+                carregarObras();
             }
-        }
-
-        function abrirModalDriveObra() { modalDriveObj.show(); }
-        function salvarLinkDrive() {
-            const link = document.getElementById('driveLinkInput').value;
-            if (!link) { mostrarNotificacao("Insira um link do Google Drive válido!", "warning"); return; }
-            dadosProjetos[projetoAtivoID].driveLink = link;
-            document.getElementById('btnOpenDrive').href = link;
-            document.getElementById('driveLinkArea').classList.remove('d-none');
-            mostrarNotificacao("Link do Google Drive salvo para esta obra!", "success");
-        }
-
-        function renderCadastrosMaster() {
-            const listP = document.getElementById('listProjetistasMaster');
-            listP.innerHTML = "";
-            cadastrosMaster.projetistas.forEach(p => {
-                listP.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div><strong>${p.nome}</strong><br><span class="text-muted">${p.cargo}</span></div>
-                    <span class="badge bg-primary">${p.capDiaria}h/dia</span>
-                </li>`;
-            });
-
-            const listC = document.getElementById('listClientesMaster');
-            listC.innerHTML = "";
-            cadastrosMaster.clientes.forEach(c => {
-                listC.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div><strong>${c.nome}</strong><br><span class="text-muted">CNPJ: ${c.cnpj}</span></div>
-                    <span class="badge bg-secondary">${c.fone}</span>
-                </li>`;
-            });
-        }
-
-        function addProjetistaModal() {
-            cadastrosMaster.projetistas.push({ id: Date.now(), nome: "Novo Projetista", cargo: "Projetista CAD/CEM", capDiaria: 8 });
-            renderCadastrosMaster();
-            mostrarNotificacao("Projetista adicionado na lista!", "info");
-        }
-
-        function addClienteModal() {
-            cadastrosMaster.clientes.push({ id: Date.now(), nome: "Novo Cliente / Construtora", cnpj: "00.000.000/0001-00", fone: "-" });
-            renderCadastrosMaster();
-            mostrarNotificacao("Cliente adicionado na lista!", "info");
-        }
-
-        function salvarParametrosTecnicos() {
-            parametrosSistema.kerfSerra = parseFloat(document.getElementById('cfgKerfSerra').value) || 5;
-            parametrosSistema.folgaVidro = parseFloat(document.getElementById('cfgFolgaVidro').value) || 10;
-            parametrosSistema.pinAdmin = document.getElementById('cfgPinAdmin').value || "1234";
-            mostrarNotificacao("Parâmetros de serra e segurança salvos!", "success");
-        }
-
-        function abrirModalNovaObra() { modalNovaObraObj.show(); }
-        async function salvarNovaObra() {
-            const nome = document.getElementById('novoNomeObra').value;
-            const cod = document.getElementById('novoCodObra').value;
-            const cli = document.getElementById('novoClienteObra').value || "Cliente Geral";
-
-            if (!nome || !cod) { mostrarNotificacao("Preencha Nome e Código da Obra!", "warning"); return; }
-
-            dadosProjetos[cod] = {
-                nome: nome,
-                cliente: cli,
-                driveLink: "",
-                itens: []
-            };
-
-            if (supabaseClient) {
-                try {
-                    await supabaseClient.from('projetos').insert([{ id_projeto: cod, nome: nome, cliente: cli }]);
-                } catch(e) { console.info("Salvo no estado local."); }
-            }
-
-            atualizarSelectGlobal();
-            selecionarProjetoGlobal(cod);
-            modalNovaObraObj.hide();
-            mostrarNotificacao(`Obra ${nome} (${cod}) cadastrada!`, "success");
-        }
-
-        function editarNomeObraAtual() {
-            const proj = dadosProjetos[projetoAtivoID];
-            if (proj) {
-                proj.nome = proj.nome + " (Atualizada)";
-                carregarProjeto(projetoAtivoID);
-                mostrarNotificacao("Obra atualizada!", "info");
-            }
-        }
-
-        function atualizarSelectGlobal() {
-            const select = document.getElementById('globalProjetoSelector');
-            select.innerHTML = "";
-            for (let id in dadosProjetos) {
-                const opt = document.createElement('option');
-                opt.value = id;
-                opt.textContent = `${dadosProjetos[id].nome} (${id})`;
-                if (id === projetoAtivoID) opt.selected = true;
-                select.appendChild(opt);
-            }
-        }
-
-        function selecionarProjetoGlobal(id) {
-            projetoAtivoID = id;
-            carregarProjeto(id);
-        }
-
-        function carregarProjeto(id) {
-            const proj = dadosProjetos[id];
-            if (!proj) return;
-
-            document.getElementById('dashNomeProjetoHeader').textContent = proj.nome;
-            document.getElementById('dashIdProjetoHeader').textContent = id;
-            document.getElementById('dashClienteHeader').textContent = proj.cliente;
-
-            if (proj.driveLink) {
-                document.getElementById('btnOpenDrive').href = proj.driveLink;
-                document.getElementById('driveLinkArea').classList.remove('d-none');
-            } else {
-                document.getElementById('driveLinkArea').classList.add('d-none');
-            }
-
-            renderTableDashboard();
-        }
-
-        function limparBaseTeste() {
-            dadosProjetos[projetoAtivoID].itens = [];
-            renderTableDashboard();
-            mostrarNotificacao("Base zerada para a obra ativa!", "warning");
         }
     </script>
 </body>
