@@ -4,8 +4,9 @@
     <base target="_top">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M-Sing - Gestão de Caixilharia & Engenharia</title>
+    <title>MSync / M-Sing - Gestão de Caixilharia & Engenharia</title>
     
+    <!-- CSS Bootstrap 5, Bootstrap Icons & Libraries -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -35,7 +36,7 @@
         }
         
         .os-titlebar { 
-            height: 40px; 
+            height: 44px; 
             background: var(--dark); 
             color: #94a3b8; 
             display: flex; 
@@ -45,8 +46,6 @@
             border-bottom: 1px solid #334155;
             user-select: none;
         }
-
-        .msync-logo-svg { height: 24px; width: auto; margin-right: 8px; }
 
         .browser-tabs { 
             background: var(--dark); 
@@ -81,22 +80,41 @@
         
         .table-inline-input { border: 1px solid transparent; background: transparent; padding: 0.25rem 0.4rem; font-size: 0.85rem; width: 100%; border-radius: 4px; font-weight: 600; }
         .table-inline-input:focus { border-color: var(--primary); background: #ffffff; outline: none; }
-        .table-inline-input.pendency-input { border: 1px dashed #b45309; background: #fffbeb; color: #b45309; }
-        .table-inline-input.pendency-input:focus { border-style: solid; }
         
         .kanban-card { border-top: 4px solid #cbd5e1; cursor: pointer; transition: 0.2s; background: #ffffff; }
         .kanban-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
         .kanban-card.active-work { border-top-color: var(--primary); border-top-width: 5px; }
+        .kanban-card.is-finished { border-top-color: var(--success); opacity: 0.85; }
 
-        .fiscal-project-btn { min-width: 140px; transition: 0.2s; }
+        .fiscal-project-btn { min-width: 130px; transition: 0.2s; }
         .fiscal-project-btn.active { background-color: var(--warning); color: #fff; border-color: var(--warning); font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transform: translateY(-2px); }
 
         .toast-container-custom { position: fixed; bottom: 20px; right: 20px; z-index: 11000; }
-        .chart-container { position: relative; height: 250px; width: 100%; }
-        
-        .eng-highlight { border-left: 4px solid var(--primary); background-color: #f0f9ff; }
+        .chart-container { position: relative; height: 230px; width: 100%; }
         
         #ai-loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 12000; align-items: center; justify-content: center; flex-direction: column; color: white; backdrop-filter: blur(5px); }
+
+        .junta-diagram { width: 100%; height: 140px; background: #0f172a; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid #334155; }
+
+        .logo-preview-box { height: 32px; max-width: 140px; object-fit: contain; }
+        .logo-param-preview { max-height: 50px; max-width: 180px; object-fit: contain; }
+
+        /* Estilos de Impressão de Relatório com Assinaturas */
+        @media print {
+            body * { visibility: hidden; }
+            #printAreaRelatorio, #printAreaRelatorio * { visibility: visible; }
+            #printAreaRelatorio { position: absolute; left: 0; top: 0; width: 100%; padding: 15px; }
+            .modal-footer, .btn-close { display: none !important; }
+        }
+
+        .signature-line {
+            border-top: 1px solid #334155;
+            width: 80%;
+            margin: 40px auto 5px auto;
+            text-align: center;
+            font-size: 0.78rem;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -105,15 +123,21 @@
 
     <div id="ai-loader">
         <div class="spinner-border text-info" style="width: 4rem; height: 4rem;" role="status"></div>
-        <h3 class="mt-4 fw-bold text-info"><i class="bi bi-magic me-2"></i>A IA está analisando o documento...</h3>
-        <p class="text-light">Cruzando dados, extraindo TAGs e processando medidas. Aguarde.</p>
+        <h3 class="mt-4 fw-bold text-info"><i class="bi bi-magic me-2"></i>A IA do MSync está analisando o documento...</h3>
+        <p class="text-light">Lendo PDF/imagem, mapeando medidas e processando TAGs.</p>
     </div>
 
     <div class="os-titlebar">
-        <div class="d-flex align-items-center gap-2">
-            <img src="./Logo MSync - Opção 2.png" alt="M-Sing Logo" style="height: 24px;" onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='inline';">
-            <span id="logo-fallback" style="display:none; font-weight: 800; font-size: 1.2rem; color: #009ef7;">M-Sing</span>
-            <span class="ms-2 text-muted" style="border-left: 1px solid #334155; padding-left: 10px; font-size: 12px;">Gestão de Caixilharia & PCP</span>
+        <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <img id="headerSystemLogo" src="" class="logo-preview-box d-none" alt="System Logo">
+                <span id="logo-fallback" style="font-weight: 800; font-size: 1.25rem; color: #009ef7; letter-spacing: -0.5px;">MSync</span>
+            </div>
+            <span class="text-muted small border-start border-secondary ps-2" style="font-size: 11px;">Sincronização de Caixilharia & PCP</span>
+        </div>
+        <div class="d-flex align-items-center gap-2 ms-auto">
+            <img id="headerClientLogo" src="" class="logo-preview-box d-none" alt="Client Logo">
+            <span id="headerClientName" class="badge bg-dark text-light border border-secondary">RBG SOLUÇÕES</span>
         </div>
     </div>
 
@@ -122,44 +146,52 @@
         <div class="b-tab" onclick="abrirAba('importador')" id="tab-importador"><i class="bi bi-file-earmark-spreadsheet"></i> 1. Contrato (Editor)</div>
         <div class="b-tab" onclick="abrirAba('fiscal')" id="tab-fiscal"><i class="bi bi-person-badge"></i> 2. Espaço do Fiscal</div>
         <div class="b-tab" onclick="abrirAba('tecnica')" id="tab-tecnica"><i class="bi bi-cpu-fill"></i> 3. Engenharia (O.P.)</div>
+        <div class="b-tab" onclick="abrirAba('ferramentas')" id="tab-ferramentas"><i class="bi bi-calculator-fill text-warning"></i> 4. Silicone Glazing & Calculadoras</div>
         <div class="b-tab" onclick="abrirAba('relatorios')" id="tab-relatorios"><i class="bi bi-printer-fill"></i> Relatórios & Status (Cliente)</div>
-        <div class="b-tab" onclick="abrirAba('parametros')" id="tab-parametros"><i class="bi bi-sliders"></i> Parâmetros / IA</div>
+        <div class="b-tab" onclick="abrirAba('parametros')" id="tab-parametros"><i class="bi bi-sliders"></i> Parâmetros / Logos / IA</div>
     </div>
 
     <div class="global-toolbar">
         <div class="d-flex align-items-center gap-2 flex-grow-1">
             <i class="bi bi-building-fill text-primary fs-5"></i>
-            <select id="globalProjetoSelector" class="form-select border-primary fw-bold text-primary shadow-sm" style="width: 400px;" onchange="selecionarProjetoGlobal(this.value)">
+            <select id="globalProjetoSelector" class="form-select border-primary fw-bold text-primary shadow-sm" style="width: 420px;" onchange="selecionarProjetoGlobal(this.value)">
                 <!-- Populado via JS -->
             </select>
-            <span class="badge bg-light text-dark border ms-2" id="kpiHorasProjetoAtivo">0.0h Esforço Estimado</span>
+            <span class="badge bg-light text-dark border ms-2" id="kpiHorasProjetoAtivo">0.0h Fila Eng.</span>
+            <button class="btn btn-sm btn-outline-primary fw-bold" onclick="abrirModalSuperCroquis()"><i class="bi bi-vector-pen me-1"></i> Super Croquis</button>
         </div>
         <div class="ms-auto d-flex gap-3 align-items-center">
             <div class="d-flex align-items-center gap-2 bg-light px-3 py-1 rounded border">
                 <i class="bi bi-person-circle text-primary"></i>
-                <small class="fw-bold text-dark">Engenheiro:</small>
-                <input type="text" id="inputNomeOperadorAtivo" class="form-control form-control-sm fw-bold text-primary border-0 bg-transparent p-0 ms-1" style="width: 140px;" value="Eng. Mariano Moraes">
+                <small class="fw-bold text-dark">Operador Ativo:</small>
+                <input type="text" id="inputNomeOperadorAtivo" class="form-control form-control-sm fw-bold text-primary border-0 bg-transparent p-0 ms-1" style="width: 160px;" value="Eng. Mariano Moraes">
             </div>
         </div>
     </div>
 
     <div id="screens-container">
         
+        <!-- DASHBOARD SCREEN -->
         <div id="screen-dashboard" class="app-screen active">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-shrink-0">
                 <div>
                     <h3 class="fw-bold text-dark mb-1"><i class="bi bi-pie-chart-fill text-primary me-2"></i>Painel Gerencial (PCP)</h3>
-                    <p class="text-muted small mb-0">Visão macro de todas as obras, progresso de liberações e carga da fábrica.</p>
+                    <p class="text-muted small mb-0">Visão executiva de progresso, gráficos de funil de produção e distribuição da carga horária por obra.</p>
+                </div>
+                <div class="d-flex gap-2 align-items-center bg-white p-2 rounded border shadow-sm">
+                    <small class="fw-bold text-muted me-1">Filtrar Kanban:</small>
+                    <button class="btn btn-sm btn-primary fw-bold active" id="btnFilterTodasObras" onclick="filtrarKanbanObras('todas')">Todas</button>
+                    <button class="btn btn-sm btn-outline-warning fw-bold" id="btnFilterAtivasObras" onclick="filtrarKanbanObras('ativas')">Ativas</button>
+                    <button class="btn btn-sm btn-outline-success fw-bold" id="btnFilterFinalizadasObras" onclick="filtrarKanbanObras('finalizadas')">Finalizadas</button>
                 </div>
             </div>
 
-            <!-- Gráficos Gerenciais -->
             <div class="row g-3 mb-4 flex-shrink-0">
                 <div class="col-lg-6">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center">
                             <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-bar-chart-line-fill me-2 text-primary"></i>Funil de Produção (Obra Ativa)</h6>
-                            <small class="text-muted" id="chartObraNome">---</small>
+                            <small class="text-primary fw-bold" id="chartObraNome">---</small>
                         </div>
                         <div class="card-body chart-container">
                             <canvas id="chartFunilProducao"></canvas>
@@ -169,7 +201,7 @@
                 <div class="col-lg-6">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-header bg-white py-2">
-                            <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-clock-history me-2 text-warning"></i>Carga de Horas (Engenharia vs Fábrica)</h6>
+                            <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-clock-history me-2 text-warning"></i>Consumo de Horas de Produção (Estimado vs OP)</h6>
                         </div>
                         <div class="card-body chart-container">
                             <canvas id="chartHorasFabrica"></canvas>
@@ -178,17 +210,18 @@
                 </div>
             </div>
             
-            <h5 class="fw-bold text-dark mb-3 border-bottom pb-2">Kanban de Obras (Ativas)</h5>
+            <h5 class="fw-bold text-dark mb-3 border-bottom pb-2">Kanban de Obras Mestre</h5>
             <div class="row g-3" id="kanbanPCPContainer">
-                <!-- Cards Gerados via JS -->
+                <!-- Gerado via JS -->
             </div>
         </div>
 
+        <!-- CONTRATO / EDITOR SCREEN -->
         <div id="screen-importador" class="app-screen">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-shrink-0">
                 <div>
                     <h3 class="fw-bold text-dark mb-1"><i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>1. Editor de Lotes (Contrato)</h3>
-                    <p class="text-muted small mb-0">Cadastre novas obras, filtre e edite TAGs, quantidades e pendências (Status).</p>
+                    <p class="text-muted small mb-0">Cadastre novas obras, filtre e edite TAGs, quantidades e pendências dos clientes.</p>
                 </div>
                 <div class="d-flex gap-2">
                     <input type="file" id="aiContractUpload" class="d-none" accept="application/pdf, image/*" onchange="lerDocumentoIA(event, 'contrato')">
@@ -199,7 +232,6 @@
                 </div>
             </div>
             
-            <!-- CAIXA DE CADASTRO DE NOVA OBRA MOVÍVEL PARA O CONTRATO -->
             <div class="card border-0 shadow-sm mb-3 bg-white">
                 <div class="card-body p-3">
                     <div class="row g-3 align-items-end">
@@ -209,20 +241,19 @@
                         </div>
                         <div class="col-md-3">
                             <label class="form-label small fw-bold">Nome da Obra</label>
-                            <input type="text" id="cadObraNome" class="form-control form-control-sm" placeholder="Ex: NOVO PROJETO">
+                            <input type="text" id="cadObraNome" class="form-control form-control-sm" placeholder="Ex: NOVO EDIFÍCIO">
                         </div>
                         <div class="col-md-3">
                             <label class="form-label small fw-bold">Projetista Responsável</label>
                             <select id="cadObraProjetista" class="form-select form-select-sm fw-bold text-primary">
-                                <option value="MARIANO">MARIANO</option>
-                                <option value="ERISVALDO">ERISVALDO</option>
+                                <!-- Populado via JS -->
                             </select>
                         </div>
                         <div class="col-md-2">
                             <button class="btn btn-success btn-sm fw-bold w-100 shadow-sm" onclick="cadastrarNovaObraManual()"><i class="bi bi-check-circle me-1"></i> Criar Obra</button>
                         </div>
                         <div class="col-md-2 border-start">
-                            <label class="form-label small fw-bold text-muted"><i class="bi bi-search me-1"></i>Filtrar Itens (TAG, Desc)</label>
+                            <label class="form-label small fw-bold text-muted"><i class="bi bi-search me-1"></i>Filtrar Itens</label>
                             <input type="text" id="filtroContratoSearch" class="form-control form-control-sm border-info" placeholder="Buscar..." onkeyup="renderEditorLotes()">
                         </div>
                     </div>
@@ -254,19 +285,19 @@
             </div>
         </div>
 
+        <!-- FISCAL SCREEN -->
         <div id="screen-fiscal" class="app-screen">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-shrink-0">
                 <div>
                     <h3 class="fw-bold text-dark mb-1"><i class="bi bi-person-badge text-warning me-2"></i>2. Espaço do Fiscal de Obra</h3>
-                    <p class="text-muted small mb-0">Navegue pelas obras abaixo. Insira a medida <strong>AFERIDA REAL</strong> e a Quantidade a ser liberada para a fábrica.</p>
+                    <p class="text-muted small mb-0">Confira o contrato. Digite as medidas <strong>AFERIDAS REAIS</strong> e a quantidade a ser liberada para a engenharia.</p>
                 </div>
                 <div>
                     <input type="file" id="aiFiscalUpload" class="d-none" accept="application/pdf, image/*" onchange="lerDocumentoIA(event, 'fiscal')">
-                    <button class="btn btn-sm btn-warning text-dark fw-bold shadow-sm" onclick="document.getElementById('aiFiscalUpload').click()"><i class="bi bi-magic text-dark"></i> Ler Liberação (IA)</button>
+                    <button class="btn btn-sm btn-warning text-dark fw-bold shadow-sm" onclick="document.getElementById('aiFiscalUpload').click()"><i class="bi bi-magic text-dark"></i> Ler Liberação Manuscrita (IA)</button>
                 </div>
             </div>
             
-            <!-- MINI KANBAN DO FISCAL -->
             <div id="fiscalMiniKanban" class="d-flex gap-2 overflow-x-auto pb-2 mb-3 px-1 border-bottom">
                 <!-- Populado via JS -->
             </div>
@@ -274,7 +305,7 @@
             <div class="card border-0 shadow-sm flex-grow-1 overflow-hidden bg-white mb-3">
                 <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
                     <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-rulers text-warning me-2"></i>Aferição e Liberação: <span id="fiscalObraNomeLabel" class="text-primary">---</span></h6>
-                    <span class="badge bg-danger">Aditivos: Lançar QTD maior que o Saldo avisará o PCP.</span>
+                    <span class="badge bg-danger">Inconsistência de QTD aciona alerta de Aditivo.</span>
                 </div>
                 <div class="card-body p-0 overflow-auto bg-white">
                     <table class="table table-hover align-middle mb-0 cem-table">
@@ -282,7 +313,7 @@
                             <tr>
                                 <th class="ps-3">TAG</th>
                                 <th>Descrição / Cor</th>
-                                <th class="text-center text-muted">Contrato ($L \times H$)</th>
+                                <th class="text-center text-muted">Contrato (L x H)</th>
                                 <th class="text-center">Qtd Contrato</th>
                                 <th class="text-center text-success">Já Lib.</th>
                                 <th class="text-center text-danger border-end">Saldo</th>
@@ -299,30 +330,31 @@
 
             <div class="card border-0 shadow-sm flex-shrink-0">
                 <div class="card-header bg-white py-2">
-                    <h6 class="mb-0 fw-bold text-secondary"><i class="bi bi-clock-history me-2"></i>Histórico de Liberações Emitidas (Obra Ativa)</h6>
+                    <h6 class="mb-0 fw-bold text-secondary"><i class="bi bi-clock-history me-2"></i>Histórico de Liberações Registradas</h6>
                 </div>
-                <div class="card-body p-2" id="fiscalHistoricoContainer" style="max-height: 150px; overflow-y: auto;">
+                <div class="card-body p-2" id="fiscalHistoricoContainer" style="max-height: 140px; overflow-y: auto;">
                     <!-- Populado via JS -->
                 </div>
             </div>
         </div>
 
+        <!-- ENGENHARIA / OP SCREEN -->
         <div id="screen-tecnica" class="app-screen">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-shrink-0">
                 <div>
                     <h3 class="fw-bold text-dark mb-1"><i class="bi bi-cpu text-info me-2"></i>3. Engenharia & Detalhamento (OPs)</h3>
-                    <h6 class="text-muted small">Mapeamento das liberações do fiscal. Detalhe os projetos, insira pendências da construtora e libere O.P.</h6>
+                    <h6 class="text-muted small">Gerencie as liberações do fiscal, informe a resposta RFI de cada item e envie lotes para a fábrica.</h6>
                 </div>
                 <div class="d-flex gap-2">
-                    <input type="text" id="nomeNovaOP" class="form-control form-control-sm border-primary fw-bold" placeholder="Nome da OP (Ex: OP-001, Fachada)..." style="width: 250px;">
-                    <button class="btn btn-sm btn-primary fw-bold shadow-sm px-4" onclick="gerarOrdemProducao()"><i class="bi bi-gear-wide-connected me-1"></i> Gerar O.P.</button>
+                    <input type="text" id="nomeNovaOP" class="form-control form-control-sm border-primary fw-bold" placeholder="Nome/Nº da OP (Ex: OP-001)..." style="width: 240px;">
+                    <button class="btn btn-sm btn-primary fw-bold shadow-sm px-4" onclick="gerarOrdemProducao()"><i class="bi bi-gear-wide-connected me-1"></i> Emitir Ordem de Produção</button>
                 </div>
             </div>
             
             <div class="card border-0 shadow-sm flex-grow-1 overflow-hidden">
                 <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0 fw-bold text-primary"><i class="bi bi-list-check me-2"></i>Fila de Trabalho e Respostas de RFI (Pendências)</h6>
-                    <span class="badge bg-warning text-dark border">Marque os itens para O.P ou edite as observações para o Relatório do Cliente.</span>
+                    <h6 class="mb-0 fw-bold text-primary"><i class="bi bi-list-check me-2"></i>Fila de Liberações do Fiscal e Respostas RFI</h6>
+                    <span class="badge bg-warning text-dark border">Selecione para gerar a OP.</span>
                 </div>
                 <div class="card-body p-0 overflow-auto bg-white">
                     <table class="table table-hover align-middle mb-0 cem-table">
@@ -335,9 +367,9 @@
                                 <th class="text-center bg-light">Lib. Fiscal</th>
                                 <th class="text-center text-success border-end">Já na OP</th>
                                 <th class="text-center text-danger fw-bold">Fila Eng</th>
-                                <th class="text-center text-secondary">Peso</th>
-                                <th class="text-center text-warning">Tempo</th>
-                                <th style="width: 220px;">Observação / Resposta p/ Cliente</th>
+                                <th class="text-center text-secondary">Peso Tot.</th>
+                                <th class="text-center text-warning">Horas Eng.</th>
+                                <th style="width: 220px;">Observação / Resposta RFI</th>
                             </tr>
                         </thead>
                         <tbody id="engTableBody"></tbody>
@@ -346,33 +378,238 @@
             </div>
         </div>
 
+        <!-- SILICONE GLAZING SCREEN -->
+        <div id="screen-ferramentas" class="app-screen">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 flex-shrink-0">
+                <div>
+                    <h3 class="fw-bold text-dark mb-1"><i class="bi bi-calculator-fill text-warning me-2"></i>4. Calculadora Técnica de Silicone Estrutural (Glazing - NBR 15737)</h3>
+                    <p class="text-muted small mb-0">Cálculo de volume de silicone de fachada com desconto de fita espaçadora/calço VHB e estimativa de sachês.</p>
+                </div>
+            </div>
+
+            <div class="row g-3 flex-grow-1">
+                <div class="col-lg-5">
+                    <div class="card border-0 shadow-sm p-3 bg-white h-100">
+                        <h6 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-sliders me-2 text-primary"></i>Geometria da Junta de Glazing</h6>
+                        
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <label class="form-label small fw-bold">Largura Junta (A mm)</label>
+                                <input type="number" id="silLarguraJunta" class="form-control form-control-sm fw-bold text-primary" value="10" min="1" oninput="calcularConsumoSilicone()">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-bold">Profundidade (B mm)</label>
+                                <input type="number" id="silProfundidadeJunta" class="form-control form-control-sm fw-bold text-primary" value="6" min="1" oninput="calcularConsumoSilicone()">
+                            </div>
+                        </div>
+
+                        <div class="form-check form-switch bg-light p-2 rounded border my-2">
+                            <input class="form-check-input ms-1" type="checkbox" id="silCheckComCalco" checked onchange="toggleCalcoCampos(); calcularConsumoSilicone();">
+                            <label class="form-check-label fw-bold text-dark ms-2" for="silCheckComCalco">Abater Fita Espaçadora / Calço</label>
+                        </div>
+
+                        <div id="silCalcoBox" class="row g-2 mb-3 p-2 bg-warning bg-opacity-10 rounded border border-warning">
+                            <div class="col-6">
+                                <label class="form-label small fw-bold text-dark">Largura Fita (mm)</label>
+                                <input type="number" id="silLarguraCalco" class="form-control form-control-sm fw-bold" value="6" min="0" oninput="calcularConsumoSilicone()">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-bold text-dark">Espessura Fita (mm)</label>
+                                <input type="number" id="silEspessuraCalco" class="form-control form-control-sm fw-bold" value="3" min="0" oninput="calcularConsumoSilicone()">
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <label class="form-label small fw-bold">Margem Perda (%)</label>
+                                <input type="number" id="silMargemPerda" class="form-control form-control-sm fw-bold" value="15" min="0" oninput="calcularConsumoSilicone()">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-bold">Embalagem</label>
+                                <select id="silTipoEmbalagem" class="form-select form-select-sm fw-bold" onchange="calcularConsumoSilicone()">
+                                    <option value="600">Sachê 600ml</option>
+                                    <option value="400">Sachê 400ml</option>
+                                    <option value="310">Cartucho 310ml</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label small fw-bold">Preço Sachê (R$)</label>
+                            <input type="number" id="silPrecoUnidade" class="form-control form-control-sm fw-bold text-success" value="48.00" step="0.50" oninput="calcularConsumoSilicone()">
+                        </div>
+
+                        <div class="junta-diagram mt-auto text-white text-center p-2">
+                            <div>
+                                <i class="bi bi-layout-sidebar-inset fs-4 text-warning"></i>
+                                <p class="mb-0 small fw-bold">Seção Transversal de Vedação</p>
+                                <span class="badge bg-primary mt-1" id="silAreaResultadoBadge">Área Líquida: 42 mm²</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-7">
+                    <div class="card border-0 shadow-sm p-3 bg-white h-100 d-flex flex-column">
+                        <h6 class="fw-bold text-dark border-bottom pb-2 mb-2"><i class="bi bi-building me-2 text-primary"></i>Consumo Calculado na Obra Ativa: <span id="silObraNomeAtiva" class="text-primary">---</span></h6>
+                        <p class="text-muted small mb-2">Multiplicação do perímetro real das esquadrias do contrato pela seção da junta de silicone.</p>
+
+                        <div class="row text-center g-2 my-2">
+                            <div class="col-4">
+                                <div class="p-2 bg-light rounded border">
+                                    <small class="text-muted d-block fw-bold">Perímetro Total</small>
+                                    <strong class="fs-5 text-dark" id="silObraMetros">0.0 m</strong>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 bg-success bg-opacity-10 rounded border border-success">
+                                    <small class="text-muted d-block fw-bold">Total Sachês</small>
+                                    <strong class="fs-5 text-success" id="silObraSaches">0 un</strong>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 bg-dark bg-opacity-10 rounded border border-dark">
+                                    <small class="text-muted d-block fw-bold">Custo Estimado</small>
+                                    <strong class="fs-5 text-dark" id="silObraCusto">R$ 0,00</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive flex-grow-1 overflow-auto mt-2" style="max-height: 250px;">
+                            <table class="table table-sm table-striped align-middle cem-table mb-0">
+                                <thead class="table-light sticky-top">
+                                    <tr>
+                                        <th>TAG</th>
+                                        <th>Descrição</th>
+                                        <th class="text-center">Qtd</th>
+                                        <th class="text-center">Perímetro/Peça</th>
+                                        <th class="text-center">Sachês Est.</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="silObraTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RELATORIOS SCREEN -->
         <div id="screen-relatorios" class="app-screen">
-            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2 flex-shrink-0">
                 <div>
                     <h3 class="mb-1 fw-bold text-dark"><i class="bi bi-printer-fill text-secondary me-2"></i>Relatórios de O.P & Status Cliente</h3>
-                    <p class="text-muted small">Gerencie as Ordens de Produção e gere o relatório RFI (Pendências) para a Construtora.</p>
+                    <p class="text-muted small">Gerencie as Ordens de Produção e emita o relatório RFI com assinaturas formais.</p>
                 </div>
                 <div>
-                    <button class="btn btn-warning fw-bold shadow-sm" onclick="gerarRelatorioPendencias()"><i class="bi bi-file-earmark-pdf me-1"></i> Gerar Relatório de Pendências (Cliente)</button>
+                    <button class="btn btn-warning fw-bold shadow-sm" onclick="gerarRelatorioPendencias()"><i class="bi bi-file-earmark-pdf me-1"></i> Gerar Relatório de Pendências (RFI)</button>
                 </div>
             </div>
             
-            <h5 class="fw-bold text-dark mb-3">Histórico de Ordens de Produção (Fábrica)</h5>
+            <h5 class="fw-bold text-dark mb-3">Histórico de Ordens de Produção Emitidas</h5>
             <div class="row" id="opsContainer">
                 <!-- Populado via JS -->
             </div>
         </div>
 
+        <!-- PARAMETROS SCREEN -->
         <div id="screen-parametros" class="app-screen">
-            <h3 class="fw-bold text-dark mb-3"><i class="bi bi-sliders text-dark me-2"></i>Integração IA & Banco de Dados</h3>
-            <div class="row g-4">
-                
+            <h3 class="fw-bold text-dark mb-3"><i class="bi bi-sliders text-dark me-2"></i>Gerenciamento de Logos, Equipe e Integração IA</h3>
+            
+            <div class="row g-4 mb-4">
                 <div class="col-lg-6">
                     <div class="card border-0 shadow-sm p-4 bg-white h-100 border-start border-info border-4">
-                        <h5 class="fw-bold text-info mb-3"><i class="bi bi-magic me-2"></i>Integração Google Gemini (IA Copilot)</h5>
-                        <p class="text-muted small">A IA do M-Sing extrai planilhas, PDFs de contrato e cruzamento de liberações de obra manuscritas (Visão).</p>
+                        <h5 class="fw-bold text-info mb-2"><i class="bi bi-image-fill me-2"></i>Logo do Sistema (MSync)</h5>
+                        <p class="text-muted small">Carregue a imagem da logo do sistema que aparece na barra superior.</p>
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="border rounded p-2 bg-light d-flex align-items-center justify-content-center" style="width: 160px; height: 60px;">
+                                <img id="previewSystemLogo" src="" class="logo-param-preview d-none" alt="System Logo">
+                                <span id="previewSystemLogoFallback" class="fw-bold text-primary">MSync Logo</span>
+                            </div>
+                            <div class="flex-grow-1">
+                                <input type="file" id="inputUploadSystemLogo" class="d-none" accept="image/*" onchange="uploadLogoImage(event, 'system')">
+                                <button class="btn btn-sm btn-outline-info fw-bold w-100 mb-2" onclick="document.getElementById('inputUploadSystemLogo').click()"><i class="bi bi-upload me-1"></i> Carregar Logo MSync</button>
+                                <button class="btn btn-sm btn-link text-danger p-0 fw-bold" onclick="removerLogoImage('system')">Restaurar Padrão</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow-sm p-4 bg-white h-100 border-start border-primary border-4">
+                        <h5 class="fw-bold text-primary mb-2"><i class="bi bi-building-gear me-2"></i>Logo da Empresa / Cliente (Ex: RBG)</h5>
+                        <p class="text-muted small">A logo da sua empresa ou cliente sairá nos relatórios e OPs impressas.</p>
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="border rounded p-2 bg-light d-flex align-items-center justify-content-center" style="width: 160px; height: 60px;">
+                                <img id="previewClientLogo" src="" class="logo-param-preview d-none" alt="Client Logo">
+                                <span id="previewClientLogoFallback" class="fw-bold text-dark">RBG Soluções</span>
+                            </div>
+                            <div class="flex-grow-1">
+                                <input type="file" id="inputUploadClientLogo" class="d-none" accept="image/*" onchange="uploadLogoImage(event, 'client')">
+                                <button class="btn btn-sm btn-outline-primary fw-bold w-100 mb-2" onclick="document.getElementById('inputUploadClientLogo').click()"><i class="bi bi-upload me-1"></i> Carregar Logo Empresa</button>
+                                <button class="btn btn-sm btn-link text-danger p-0 fw-bold" onclick="removerLogoImage('client')">Restaurar Padrão</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-lg-12">
+                    <div class="card border-0 shadow-sm p-4 bg-white border-start border-success border-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h5 class="fw-bold text-success mb-0"><i class="bi bi-people-fill me-2"></i>Cadastro de Profissionais & Equipe (Área Técnica e Campo)</h5>
+                                <small class="text-muted">Cadastre Projetistas para o Painel da Engenharia e Fiscais para os relatórios de medição de obra.</small>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 align-items-end mb-3 bg-light p-3 rounded border">
+                            <div class="col-md-5">
+                                <label class="form-label small fw-bold">Nome do Profissional</label>
+                                <input type="text" id="novoProfissionalNome" class="form-control form-control-sm fw-bold" placeholder="Ex: ERISVALDO ou MARIANO...">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Cargo / Função no Sistema</label>
+                                <select id="novoProfissionalCargo" class="form-select form-select-sm fw-bold text-primary">
+                                    <option value="Projetista">Projetista (Área Técnica)</option>
+                                    <option value="Fiscal de Obra">Fiscal de Obra (Gestão de Canteiro)</option>
+                                    <option value="Engenheiro de Produção">Engenheiro de Produção / PCP</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-sm btn-success fw-bold w-100 shadow-sm" onclick="cadastrarProfissionalEquipe()">
+                                    <i class="bi bi-person-plus-fill me-1"></i> Cadastrar Profissional
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover align-middle mb-0 cem-table">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-3">Nome</th>
+                                        <th>Cargo / Função</th>
+                                        <th class="text-center">Status</th>
+                                        <th class="text-center" style="width: 120px;">Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabelaEquipeBody">
+                                    <!-- Gerado via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow-sm p-4 bg-white h-100 border-start border-info border-4">
+                        <h5 class="fw-bold text-info mb-3"><i class="bi bi-magic me-2"></i>Chave da API Google Gemini (IA Copilot)</h5>
+                        <p class="text-muted small">A IA do MSync lê documentos de contrato, croquis e minutas de liberação do fiscal.</p>
                         <div class="mb-3">
-                            <label class="form-label small fw-bold text-dark">Chave da API (Gemini API Key)</label>
+                            <label class="form-label small fw-bold text-dark">Gemini API Key</label>
                             <input type="password" id="geminiApiKey" class="form-control form-control-sm border-info" value="AQ.Ab8RN6JM4vZiKxogSlxCehK_ZTr7HXMo7eXPZsYzEGIrqBSr_A">
                         </div>
                         <button class="btn btn-sm btn-info text-white fw-bold w-100 shadow-sm" onclick="salvarChaveIA()"><i class="bi bi-key-fill"></i> Salvar Chave IA no Navegador</button>
@@ -381,7 +618,7 @@
 
                 <div class="col-lg-6">
                     <div class="card border-0 shadow-sm p-4 bg-white h-100 border-start border-primary border-4">
-                        <h5 class="fw-bold text-primary mb-3"><i class="bi bi-database-check me-2"></i>Conexão Banco de Dados (Supabase)</h5>
+                        <h5 class="fw-bold text-primary mb-3"><i class="bi bi-database-check me-2"></i>Conexão Nuvem (Supabase)</h5>
                         <div class="mb-3">
                             <label class="form-label small fw-bold text-muted">NEXT_PUBLIC_SUPABASE_URL</label>
                             <input type="text" class="form-control form-control-sm fw-bold bg-light" value="https://jlplzxgojefbwohjhyuu.supabase.co" readonly>
@@ -391,7 +628,7 @@
                             <input type="text" class="form-control form-control-sm bg-light" value="sb_publishable_Ec0zb3yQF48_VMNOcB5_vw_vcEVwcXb" readonly>
                         </div>
                         <div class="alert alert-success border-success mt-auto mb-0 py-2 small">
-                            <i class="bi bi-check-circle-fill me-2"></i> Módulo Supabase JS Configurado.
+                            <i class="bi bi-check-circle-fill me-2"></i> Conexão Supabase JS Operacional.
                         </div>
                     </div>
                 </div>
@@ -400,7 +637,7 @@
 
     </div>
 
-    <!-- MODAL RELATÓRIO PENDÊNCIAS CLIENTE -->
+    <!-- MODAL RELATORIO CLIENTE COM ASSINATURAS -->
     <div class="modal fade" id="modalRelatorioCliente" tabindex="-1">
         <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content border-0 shadow">
@@ -409,15 +646,25 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body bg-white" id="printAreaRelatorio">
-                    <div class="text-center mb-4">
-                        <h4 class="fw-bold text-dark">RBG SOLUÇÕES VIDRO E ALUMÍNIO</h4>
-                        <h6 class="text-muted">STATUS REPORT - ESQUADRIAS E FACHADAS</h6>
-                        <hr>
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                        <div class="d-flex align-items-center gap-3">
+                            <img id="relModalClientLogo" src="" class="logo-param-preview d-none" alt="Client Logo">
+                            <div>
+                                <h4 class="fw-bold text-dark mb-0" id="relModalEmpresaNome">RBG SOLUÇÕES VIDRO E ALUMÍNIO</h4>
+                                <h6 class="text-muted mb-0">STATUS REPORT - ESQUADRIAS, FACHADAS E LIBERAÇÕES</h6>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <img id="relModalSystemLogo" src="" class="logo-preview-box d-none mb-1" alt="MSync Logo">
+                            <small class="text-muted d-block fw-bold">Sistema MSync PCP</small>
+                        </div>
                     </div>
-                    <div class="row mb-4">
-                        <div class="col-md-6"><p class="mb-1"><strong>Obra:</strong> <span id="relClientObraNome" class="text-primary"></span></p></div>
-                        <div class="col-md-6 text-end"><p class="mb-1"><strong>Data de Emissão:</strong> <span id="relClientData"></span></p></div>
+                    
+                    <div class="row mb-3 bg-light p-3 rounded border mx-0">
+                        <div class="col-md-6"><p class="mb-1"><strong>Obra / Projeto:</strong> <span id="relClientObraNome" class="text-primary fw-bold"></span></p></div>
+                        <div class="col-md-6 text-end"><p class="mb-1"><strong>Data / Hora Emissão:</strong> <span id="relClientData" class="fw-bold text-dark"></span></p></div>
                     </div>
+
                     <table class="table table-bordered table-sm align-middle" style="font-size: 0.85rem;">
                         <thead class="table-light">
                             <tr>
@@ -431,6 +678,28 @@
                         </thead>
                         <tbody id="relClientTableBody"></tbody>
                     </table>
+
+                    <!-- CAMPOS DE ASSINATURA FORMAL -->
+                    <div class="row mt-5 pt-4">
+                        <div class="col-4 text-center">
+                            <div class="signature-line">
+                                Responsável Técnico RBG Soluções<br>
+                                <small class="text-muted fw-normal" id="relSignOperadorName">Eng. Mariano Moraes</small>
+                            </div>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div class="signature-line">
+                                Supervisor de Produção / PCP<br>
+                                <small class="text-muted fw-normal">PCP Fábrica</small>
+                            </div>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div class="signature-line">
+                                Fiscal / Construtora Cliente<br>
+                                <small class="text-muted fw-normal">Gestão de Canteiro</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
@@ -440,578 +709,939 @@
         </div>
     </div>
 
+    <!-- MODAL SUPER CROQUIS -->
+    <div class="modal fade" id="modalSuperCroquis" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-vector-pen text-info me-2"></i>Gerador de Super Croquis Vetorial (SVG)</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body bg-light">
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <div class="card border-0 p-3 bg-white h-100 shadow-sm">
+                                <h6 class="fw-bold border-bottom pb-2">Parâmetros do Desenho</h6>
+                                <div class="mb-2">
+                                    <label class="form-label small fw-bold">Modelo de Esquadria</label>
+                                    <select id="croquiTipoSelect" class="form-select form-select-sm fw-bold" onchange="gerarPreviewCroquiSVG()">
+                                        <option value="correr2">Porta/Janela de Correr (2 Folhas)</option>
+                                        <option value="correr3">Porta de Correr (3 Folhas)</option>
+                                        <option value="maximar">Maxim-Ar (1 Folha)</option>
+                                        <option value="fixobandeira">Fixo 2 Folhas c/ Bandeira</option>
+                                        <option value="fachada">Fachada Grid Glazing</option>
+                                    </select>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small fw-bold">Largura L (mm)</label>
+                                    <input type="number" id="croquiLarguraInput" class="form-control form-control-sm fw-bold text-primary" value="2060" oninput="gerarPreviewCroquiSVG()">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Altura H (mm)</label>
+                                    <input type="number" id="croquiAlturaInput" class="form-control form-control-sm fw-bold text-primary" value="1090" oninput="gerarPreviewCroquiSVG()">
+                                </div>
+                                <button class="btn btn-sm btn-primary fw-bold mt-auto" onclick="copiarSVGToClipboard()"><i class="bi bi-code-square me-1"></i> Copiar Código SVG</button>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="card border-0 p-3 bg-white h-100 shadow-sm d-flex flex-column align-items-center justify-content-center">
+                                <h6 class="fw-bold mb-2">Elevação Externa Projetada</h6>
+                                <div id="croquiSVGContainer" class="w-100 text-center border p-2 bg-light rounded" style="min-height: 220px;">
+                                    <!-- SVG Injetado via JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // --- BASE DE DADOS GLOBAL ---
+        // State variables
+        let apiKey = "AQ.Ab8RN6JM4vZiKxogSlxCehK_ZTr7HXMo7eXPZsYzEGIrqBSr_A";
+        let projetoAtivoId = "rbg-26-04-0045";
+        let historicoLib = [];
+        let ordensProducao = [];
+        let chartFunilInst = null;
+        let chartHorasInst = null;
+        let kanbanFiltroStatus = 'todas'; // 'todas', 'ativas', 'finalizadas'
+
+        let logoSystemBase64 = "";
+        let logoClientBase64 = "";
+
+        let equipeProfissionais = [
+            { id: "prof-1", nome: "MARIANO", cargo: "Projetista", ativo: true },
+            { id: "prof-2", nome: "ERISVALDO", cargo: "Projetista", ativo: true },
+            { id: "prof-3", nome: "Eng. Mariano Moraes", cargo: "Engenheiro de Produção", ativo: true },
+            { id: "prof-4", nome: "Fiscal de Obra - Campo", cargo: "Fiscal de Obra", ativo: true }
+        ];
+
         let projetosCache = [
-            { id: "rbg-24-0002", codigo: "RBG 24-0002", nome: "TERO RESIDENCIAL", projetista: "ERISVALDO" },
-            { id: "rbg-24-0004", codigo: "RBG 24-0004", nome: "ALVARENGA-ITU", projetista: "ERISVALDO" },
-            { id: "rbg-24-0006", codigo: "RBG 24-0006", nome: "PAULO & MALU", projetista: "ERISVALDO" },
-            { id: "rbg-24-0007", codigo: "RBG 24-0007", nome: "VIVIANE & MAURO", projetista: "ERISVALDO" },
-            { id: "rbg-24-0011", codigo: "RBG 24-0011", nome: "FADLO HAIDAR", projetista: "ERISVALDO" },
-            { id: "rbg-25-0036", codigo: "RBG 25-0036", nome: "INFINITY-SINCO", projetista: "MARIANO" },
-            { id: "rbg-26-0043", codigo: "RBG 26-0043", nome: "CACAU SHOW (PORTAS)", projetista: "MARIANO" },
-            { id: "rbg-26-0045", codigo: "RBG 26-0045", nome: "SEIZA PARAÍSO", projetista: "MARIANO" }, // NOSSA OBRA PRINCIPAL
-            { id: "rbg-26-0046", codigo: "RBG 26-0046", nome: "MONTE LÍBANO", projetista: "ERISVALDO" }
+            { id: "rbg-24-0002", codigo: "RBG 24-0002", nome: "TERO RESIDENCIAL EAS-MORUMBI", cliente: "EAS Engenharia", projetista: "ERISVALDO", finalizada: false },
+            { id: "rbg-24-0004", codigo: "RBG 24-0004", nome: "ALVARENGA-ITU-BSA", cliente: "BSA Construtora", projetista: "ERISVALDO", finalizada: true },
+            { id: "rbg-24-0006", codigo: "RBG 24-0006", nome: "PAULO & MALU-ITU", cliente: "Particular", projetista: "ERISVALDO", finalizada: true },
+            { id: "rbg-24-0007", codigo: "RBG 24-0007", nome: "VIVIANE & MAURO CHEBIB-IBIRAPUERA", cliente: "Chebib Eng", projetista: "ERISVALDO", finalizada: false },
+            { id: "rbg-24-0011", codigo: "RBG 24-0011", nome: "FADLO HAIDAR-SINCO", cliente: "Sinco Eng", projetista: "ERISVALDO", finalizada: false },
+            { id: "rbg-25-0000", codigo: "RBG 25-0000", nome: "MONTE LÍBANO 25", cliente: "Geral", projetista: "ERISVALDO", finalizada: true },
+            { id: "rbg-25-0023", codigo: "RBG 25-0023", nome: "ATMOSFERA-UBATUBA", cliente: "Atmosfera Inc", projetista: "ERISVALDO", finalizada: false },
+            { id: "rbg-25-0024", codigo: "RBG 25-0024", nome: "GABRIELA & BENY-SÃO SEBASTIÃO", cliente: "Particular", projetista: "ERISVALDO", finalizada: true },
+            { id: "rbg-25-0034", codigo: "RBG 25-0034", nome: "REDE D'OR SÃO LUIZ", cliente: "Rede D'Or", projetista: "ERISVALDO", finalizada: false },
+            { id: "rbg-25-0035", codigo: "RBG 25-0035", nome: "PASSARELLI-VIEW PINHEIRO", cliente: "Passarelli Eng", projetista: "MARIANO", finalizada: false },
+            { id: "rbg-25-0036", codigo: "RBG 25-0036", nome: "INFINITY-SINCO", cliente: "Sinco Eng", projetista: "MARIANO", finalizada: false },
+            { id: "rbg-25-0037", codigo: "RBG 25-0037", nome: "BERRINI-SINCO", cliente: "Sinco Eng", projetista: "MARIANO", finalizada: false },
+            { id: "rbg-25-0041", codigo: "RBG 25-0041", nome: "CARDEAL ARCOVERDE-ARTZ", cliente: "Artz Eng", projetista: "MARIANO", finalizada: false },
+            { id: "rbg-26-0043", codigo: "RBG 26-0043", nome: "CACAU SHOW- (PORTAS)", cliente: "Cacau Show", projetista: "MARIANO", finalizada: false },
+            { id: "rbg-26-0044", codigo: "RBG 26-0044", nome: "CÉU PIRAJUÇARA", cliente: "Prefeitura", projetista: "ERISVALDO", finalizada: false },
+            { id: "rbg-26-04-0045", codigo: "RBG26-04-0045", nome: "SEIZA PARAÍSO", cliente: "REZENDE ARTUR SABOIA SPE LTDA", projetista: "MARIANO", finalizada: false },
+            { id: "rbg-26-0046", codigo: "RBG 26-0046", nome: "MONTE LÍBANO 26", cliente: "Geral", projetista: "ERISVALDO", finalizada: false },
+            { id: "rbg-26-0047", codigo: "RBG 26-0047", nome: "CACAU SHOW (FACHADAS)", cliente: "Cacau Show", projetista: "ERISVALDO", finalizada: false }
         ];
 
         let dadosProjetos = {};
-        projetosCache.forEach(p => dadosProjetos[p.id] = []); 
-        
-        // --- OS 19 ITENS DO SEIZA PARAISO COM CORES E PENDÊNCIAS (Restauração Completa) ---
-        dadosProjetos["rbg-26-0045"] = [
-            { item_id: "i1", tag: "PA16", codigo: "AGLO32-PGR", desc: "PORTA DE GIRO COM FIXOS", loc: "FITNESS", linha: "GOLD", cor: "PRETO FOSCO", l: 8460, h: 2250, l_r:null, h_r:null, qtd_c: 1, qtd_l: 0, qtd_op: 0, peso: 88.635, tempo: 8.5, obs: "Aguardando definição de piso" },
-            { item_id: "i2", tag: "JA08", codigo: "GOL-FIXN00", desc: "FIXO 2 FOLHAS", loc: "LAVANDERIA", linha: "GOLD", cor: "PRETO FOSCO", l: 2060, h: 1090, l_r:2055, h_r:1085, qtd_c: 1, qtd_l: 1, qtd_op: 0, peso: 12.467, tempo: 1.5, obs: "" },
-            { item_id: "i3", tag: "JA23", codigo: "GOL-FIXN00", desc: "FIXO 2 FOLHAS", loc: "CLAUSURA", linha: "GOLD", cor: "PRETO FOSCO", l: 1510, h: 1090, l_r:1500, h_r:1080, qtd_c: 1, qtd_l: 1, qtd_op: 0, peso: 10.776, tempo: 1.2, obs: "" },
-            { item_id: "i4", tag: "JA28", codigo: "GOL-FIXN00", desc: "FIXO 2 FOLHAS", loc: "ACESSO SOCIAL", linha: "GOLD", cor: "PRETO FOSCO", l: 1275, h: 1090, l_r:1265, h_r:1085, qtd_c: 1, qtd_l: 1, qtd_op: 0, peso: 10.052, tempo: 1.2, obs: "" },
-            { item_id: "i5", tag: "JA18", codigo: "GOL-FIXN01", desc: "FIXO 8 FOLHAS C/BANDEIRA", loc: "FITNESS", linha: "GOLD", cor: "PRETO FOSCO", l: 3860, h: 1950, l_r:null, h_r:null, qtd_c: 1, qtd_l: 0, qtd_op: 0, peso: 58.009, tempo: 4.0, obs: "Vão fora de esquadro (RFI-04)" },
-            { item_id: "i6", tag: "JA09", codigo: "GOL-FIXN01", desc: "FIXO 2 FOLHAS C/BANDEIRA", loc: "LOBBY", linha: "GOLD", cor: "PRETO FOSCO", l: 2060, h: 1800, l_r:2055, h_r:1790, qtd_c: 1, qtd_l: 1, qtd_op: 0, peso: 18.480, tempo: 2.5, obs: "" },
-            { item_id: "i7", tag: "JA16", codigo: "GOL-FIXN01", desc: "FIXO 4 FOLHAS C/BANDEIRA", loc: "FITNESS", linha: "GOLD", cor: "PRETO FOSCO", l: 4360, h: 1950, l_r:null, h_r:null, qtd_c: 1, qtd_l: 0, qtd_op: 0, peso: 39.324, tempo: 3.5, obs: "" },
-            { item_id: "i8", tag: "JA17", codigo: "GOL-FIXN01", desc: "FIXO 4 FOLHAS C/BANDEIRA", loc: "FITNESS", linha: "GOLD", cor: "PRETO FOSCO", l: 4060, h: 1950, l_r:null, h_r:null, qtd_c: 2, qtd_l: 0, qtd_op: 0, peso: 76.135, tempo: 3.5, obs: "" },
-            { item_id: "i9", tag: "JA13", codigo: "GOL-JCR200", desc: "JANELA DE CORRER 2 FOLHAS", loc: "COPA", linha: "GOLD", cor: "PRETO FOSCO", l: 1460, h: 1090, l_r:1450, h_r:1080, qtd_c: 1, qtd_l: 1, qtd_op: 1, peso: 13.395, tempo: 2.0, obs: "" },
-            { item_id: "i10", tag: "JA15", codigo: "GOL-JCR200", desc: "JANELA DE CORRER 2 FOLHAS", loc: "COWORKING", linha: "GOLD", cor: "PRETO FOSCO", l: 2260, h: 1090, l_r:2250, h_r:1080, qtd_c: 1, qtd_l: 1, qtd_op: 1, peso: 17.079, tempo: 2.2, obs: "" },
-            { item_id: "i11", tag: "PA14", codigo: "GOL-PCR200", desc: "PORTA DE CORRER 2 FOLHAS", loc: "SALÃO FESTAS", linha: "AGLO 32", cor: "PRETO FOSCO", l: 1860, h: 2250, l_r:null, h_r:null, qtd_c: 3, qtd_l: 1, qtd_op: 0, peso: 81.782, tempo: 3.0, obs: "Falta liberar alvenaria lateral" },
-            { item_id: "i12", tag: "PA15", codigo: "GOL-PGR102", desc: "PORTA DE GIRO C/ 1 FIXO", loc: "FITNESS", linha: "AGLO 32", cor: "PRETO FOSCO", l: 1825, h: 2250, l_r:null, h_r:null, qtd_c: 1, qtd_l: 0, qtd_op: 0, peso: 26.183, tempo: 3.0, obs: "" },
-            { item_id: "i13", tag: "PA13", codigo: "GRID-FCH", desc: "FACHADA 13 MÓDULOS", loc: "EMBASAMENTO", linha: "FACHADA", cor: "PRATA", l: 11760, h: 8775, l_r:null, h_r:null, qtd_c: 1, qtd_l: 0, qtd_op: 0, peso: 674.953, tempo: 30.0, obs: "Medição in loco agendada p/ semana que vem" },
-            { item_id: "i14", tag: "JA03", codigo: "SUP-IJC200", desc: "JANELA INTEGRADA 2 FOLHAS", loc: "DORM D", linha: "SUPREMA", cor: "PRETO FOSCO", l: 1360, h: 1090, l_r:1350, h_r:1080, qtd_c: 48, qtd_l: 48, qtd_op: 20, peso: 972.404, tempo: 2.5, obs: "" },
-            { item_id: "i15", tag: "JA24", codigo: "SUP-IJC202", desc: "JANELA INTEGRADA C/PEITORIL", loc: "DORM B/C", linha: "SUPREMA", cor: "PRETO FOSCO", l: 1960, h: 1490, l_r:1950, h_r:1480, qtd_c: 35, qtd_l: 35, qtd_op: 35, peso: 1077.142, tempo: 3.2, obs: "" },
-            { item_id: "i16", tag: "JA01", codigo: "SUP-MAXN00", desc: "MAXIM-AR 1 FOLHA", loc: "BANHOS", linha: "SUPREMA", cor: "PRETO FOSCO", l: 660, h: 660, l_r:650, h_r:650, qtd_c: 101, qtd_l: 101, qtd_op: 101, peso: 299.869, tempo: 0.8, obs: "" },
-            { item_id: "i17", tag: "PA01", codigo: "SUP-PCR300", desc: "PORTA DE CORRER 3 FOLHAS", loc: "TERRAÇO A", linha: "SUPREMA", cor: "PRETO FOSCO", l: 3460, h: 2250, l_r:3450, h_r:2240, qtd_c: 19, qtd_l: 10, qtd_op: 0, peso: 559.603, tempo: 4.5, obs: "Restante aguarda desforma da laje" },
-            { item_id: "i18", tag: "PA02", codigo: "SUP-PCR200", desc: "PORTA DE CORRER 2 FOLHAS", loc: "TERRAÇO B", linha: "AGLO 25", cor: "PRETO FOSCO", l: 2010, h: 2250, l_r:2000, h_r:2240, qtd_c: 19, qtd_l: 12, qtd_op: 0, peso: 323.652, tempo: 2.8, obs: "" },
-            { item_id: "i19", tag: "PA03", codigo: "SUP-PCR200", desc: "PORTA DE CORRER 2 FOLHAS", loc: "TERRAÇO C", linha: "AGLO 25", cor: "PRETO FOSCO", l: 2060, h: 2250, l_r:2050, h_r:2240, qtd_c: 72, qtd_l: 45, qtd_op: 0, peso: 1240.969, tempo: 2.8, obs: "Cliente quer confirmar se vai recolhedor manual" }
-        ];
-
-        let projetoAtivoId = "rbg-26-0045";
-        let historicoLib = [];
-        let ordensProducao = [];
-        let chartFunil = null;
-        let chartHoras = null;
-        let apiKey = localStorage.getItem('gemini_api_key') || "AQ.Ab8RN6JM4vZiKxogSlxCehK_ZTr7HXMo7eXPZsYzEGIrqBSr_A";
 
         window.onload = function() {
-            const sel = document.getElementById('globalProjetoSelector');
-            projetosCache.forEach(p => {
-                sel.innerHTML += `<option value="${p.id}" ${p.id === projetoAtivoId ? 'selected' : ''}>${p.codigo} - ${p.nome} (${p.projetista})</option>`;
-            });
-            document.getElementById('geminiApiKey').value = apiKey;
+            carregarLogosDoStorage();
+            projetosCache.forEach(p => dadosProjetos[p.id] = []); 
             
-            // Simular o Histórico do Fiscal (LIB.01, 02, 03)
-            historicoLib.push({ obra: "rbg-26-0045", ref: "LIB.01", desc: "JA01 (48 un), JA02 (32 un), JA03 (48 un)...", data: "08/05/2026" });
-            historicoLib.push({ obra: "rbg-26-0045", ref: "LIB.02", desc: "JA05 (12 un), JA06 (12 un)", data: "27/07/2026" });
-            historicoLib.push({ obra: "rbg-26-0045", ref: "LIB.03", desc: "PA01 (2 un), PA02 (2 un), PA03 (4 un)...", data: "07/07/2026" });
+            // Lança os 19 itens reais do Seiza Paraíso
+            dadosProjetos["rbg-26-04-0045"] = [
+                { item_id: "itm-1", tag: "PA16", codigo_esquadria: "AGLO32-PGR", descricao: "PORTA DE GIRO COM FIXOS LATERAIS", localizacao: "FITNESS", linha: "GOLD", cor: "PRETO FOSCO - RAL9005F", largura_proj: 8460, altura_proj: 2250, l_real: null, h_real: null, qtd_contrato: 1, qtd_liberada: 0, qtd_op: 0, peso_kg: 88.635, tempo_padrao: 4.5, observacao: "" },
+                { item_id: "itm-2", tag: "JA08", codigo_esquadria: "GOL-FIXN00", descricao: "FIXO 2 FOLHAS", localizacao: "LAVANDERIA", linha: "GOLD", cor: "PRETO FOSCO - RAL9005F", largura_proj: 2060, altura_proj: 1090, l_real: 2055, h_real: 1085, qtd_contrato: 1, qtd_liberada: 1, qtd_op: 1, peso_kg: 12.467, tempo_padrao: 1.5, observacao: "Liberado na LIB.01" },
+                { item_id: "itm-3", tag: "JA23", codigo_esquadria: "GOL-FIXN00", descricao: "FIXO 2 FOLHAS", localizacao: "CLAUSURA SOCIAL", linha: "GOLD", cor: "PRETO FOSCO - RAL9005F", largura_proj: 1510, altura_proj: 1090, l_real: 1500, h_real: 1080, qtd_contrato: 1, qtd_liberada: 1, qtd_op: 1, peso_kg: 10.776, tempo_padrao: 1.2, observacao: "Liberado na LIB.01" },
+                { item_id: "itm-4", tag: "JA28", codigo_esquadria: "GOL-FIXN00", descricao: "FIXO 2 FOLHAS", localizacao: "ACESSO SOCIAL", linha: "GOLD", cor: "PRETO FOSCO - RAL9005F", largura_proj: 1275, altura_proj: 1090, l_real: 1265, h_real: 1085, qtd_contrato: 1, qtd_liberada: 1, qtd_op: 1, peso_kg: 10.052, tempo_padrao: 1.2, observacao: "Liberado na LIB.01" },
+                { item_id: "itm-5", tag: "JA18", codigo_esquadria: "GOL-FIXN01", descricao: "FIXO 8 FOLHAS C/BANDEIRA", localizacao: "FITNESS", linha: "GOLD", cor: "PRETO FOSCO - RAL9005F", largura_proj: 3860, altura_proj: 1950, l_real: null, h_real: null, qtd_contrato: 1, qtd_liberada: 0, qtd_op: 0, peso_kg: 58.009, tempo_padrao: 5.0, observacao: "Aguardando estrutura" },
+                { item_id: "itm-6", tag: "JA09", codigo_esquadria: "GOL-FIXN01", descricao: "FIXO 2 FOLHAS C/BANDEIRA", localizacao: "LOBBY", linha: "GOLD", cor: "PRETO FOSCO - RAL9005F", largura_proj: 2060, altura_proj: 1800, l_real: 2055, h_real: 1790, qtd_contrato: 1, qtd_liberada: 1, qtd_op: 1, peso_kg: 18.480, tempo_padrao: 2.0, observacao: "OK" },
+                { item_id: "itm-7", tag: "JA16", codigo_esquadria: "GOL-FIXN01", descricao: "FIXO 4 FOLHAS C/BANDEIRA", localizacao: "FITNESS", linha: "GOLD", cor: "PRETO FOSCO - RAL9005F", largura_proj: 4360, altura_proj: 1950, l_real: null, h_real: null, qtd_contrato: 1, qtd_liberada: 0, qtd_op: 0, peso_kg: 39.324, tempo_padrao: 3.5, observacao: "" },
+                { item_id: "itm-8", tag: "JA17", codigo_esquadria: "GOL-FIXN01", descricao: "FIXO 4 FOLHAS C/BANDEIRA", localizacao: "FITNESS", linha: "GOLD", cor: "PRETO FOSCO - RAL9005F", largura_proj: 4060, altura_proj: 1950, l_real: null, h_real: null, qtd_contrato: 2, qtd_liberada: 0, qtd_op: 0, peso_kg: 76.135, tempo_padrao: 3.5, observacao: "" },
+                { item_id: "itm-9", tag: "JA13", codigo_esquadria: "GOL-JCR200", descricao: "JANELA DE CORRER 2 FOLHAS", localizacao: "COPA", linha: "GOLD", cor: "PRETO FOSCO - RAL9005F", largura_proj: 1460, altura_proj: 1090, l_real: 1450, h_real: 1080, qtd_contrato: 1, qtd_liberada: 1, qtd_op: 1, peso_kg: 13.395, tempo_padrao: 2.5, observacao: "" },
+                { item_id: "itm-10", tag: "JA15", codigo_esquadria: "GOL-JCR200", descricao: "JANELA DE CORRER 2 FOLHAS", localizacao: "COWORKING", linha: "GOLD", cor: "PRETO FOSCO - RAL9005F", largura_proj: 2260, altura_proj: 1090, l_real: 2250, h_real: 1080, qtd_contrato: 1, qtd_liberada: 1, qtd_op: 1, peso_kg: 17.079, tempo_padrao: 2.5, observacao: "" },
+                { item_id: "itm-11", tag: "PA14", codigo_esquadria: "GOL-PCR200", descricao: "PORTA DE CORRER 2 FOLHAS", localizacao: "SALÃO FESTAS", linha: "AGLO 32", cor: "PRETO FOSCO - RAL9005F", largura_proj: 1860, altura_proj: 2250, l_real: 1855, h_real: 2240, qtd_contrato: 3, qtd_liberada: 1, qtd_op: 0, peso_kg: 81.782, tempo_padrao: 3.0, observacao: "1 pç na fila de eng." },
+                { item_id: "itm-12", tag: "PA15", codigo_esquadria: "GOL-PGR102", descricao: "PORTA DE GIRO C/ 1 FIXO", localizacao: "FITNESS", linha: "AGLO 32", cor: "PRETO FOSCO - RAL9005F", largura_proj: 1825, altura_proj: 2250, l_real: null, h_real: null, qtd_contrato: 1, qtd_liberada: 0, qtd_op: 0, peso_kg: 26.183, tempo_padrao: 3.0, observacao: "" },
+                { item_id: "itm-13", tag: "PA13", codigo_esquadria: "GRID-FCH", descricao: "FACHADA 13 MÓDULOS", localizacao: "EMBASAMENTO", linha: "FACHADA GRID", cor: "PRETO FOSCO - RAL9005F", largura_proj: 11760, altura_proj: 8775, l_real: null, h_real: null, qtd_contrato: 1, qtd_liberada: 0, qtd_op: 0, peso_kg: 674.953, tempo_padrao: 25.0, observacao: "Glazing NBR 15737" },
+                { item_id: "itm-14", tag: "JA03", codigo_esquadria: "SUP-IJC200", descricao: "JANELA INTEGRADA 2 FOLHAS", localizacao: "DORM D/D1", linha: "SUPREMA", cor: "PRETO FOSCO - RAL9005F", largura_proj: 1360, altura_proj: 1090, l_real: 1350, h_real: 1080, qtd_contrato: 48, qtd_liberada: 48, qtd_op: 48, peso_kg: 972.404, tempo_padrao: 1.5, observacao: "Liberação Total LIB.01" },
+                { item_id: "itm-15", tag: "JA24", codigo_esquadria: "SUP-IJC202", descricao: "JANELA INTEGRADA C/PEITORIL", localizacao: "DORM B/C", linha: "SUPREMA", cor: "PRETO FOSCO - RAL9005F", largura_proj: 1960, altura_proj: 1490, l_real: 1950, h_real: 1480, qtd_contrato: 35, qtd_liberada: 35, qtd_op: 24, peso_kg: 1077.142, tempo_padrao: 2.0, observacao: "11 pçs pendentes na fábrica" },
+                { item_id: "itm-16", tag: "JA01", codigo_esquadria: "SUP-MAXN00", descricao: "MAXIM-AR 1 FOLHA", localizacao: "BANHOS", linha: "SUPREMA", cor: "PRETO FOSCO - RAL9005F", largura_proj: 660, altura_proj: 660, l_real: 650, h_real: 650, qtd_contrato: 101, qtd_liberada: 101, qtd_op: 101, peso_kg: 299.869, tempo_padrao: 0.8, observacao: "100% OK" },
+                { item_id: "itm-17", tag: "PA01", codigo_esquadria: "SUP-PCR300", descricao: "PORTA DE CORRER 3 FOLHAS", localizacao: "TERRAÇO TIPO A", linha: "SUPREMA", cor: "PRETO FOSCO - RAL9005F", largura_proj: 3460, altura_proj: 2250, l_real: 3450, h_real: 2240, qtd_contrato: 19, qtd_liberada: 10, qtd_op: 10, peso_kg: 559.603, tempo_padrao: 3.5, observacao: "LIB.03 Parcial" },
+                { item_id: "itm-18", tag: "PA02", codigo_esquadria: "SUP-PCR200", descricao: "PORTA DE CORRER 2 FOLHAS", localizacao: "TERRAÇO TIPO B", linha: "AGLO 25", cor: "PRETO FOSCO - RAL9005F", largura_proj: 2010, altura_proj: 2250, l_real: 2000, h_real: 2240, qtd_contrato: 19, qtd_liberada: 12, qtd_op: 12, peso_kg: 323.652, tempo_padrao: 2.5, observacao: "LIB.03 Parcial" },
+                { item_id: "itm-19", tag: "PA03", codigo_esquadria: "SUP-PCR200", descricao: "PORTA DE CORRER 2 FOLHAS", localizacao: "TERRAÇO TIPO C", linha: "AGLO 25", cor: "PRETO FOSCO - RAL9005F", largura_proj: 2060, altura_proj: 2250, l_real: 2050, h_real: 2240, qtd_contrato: 72, qtd_liberada: 45, qtd_op: 30, peso_kg: 1240.969, tempo_padrao: 2.5, observacao: "15 pçs na fila de eng." }
+            ];
+
+            historicoLib.push({ obra: "rbg-26-04-0045", ref: "LIB.01", desc: "JA01 (101un), JA03 (48un), JA24 (35un)", data: "08/05/2026" });
+            historicoLib.push({ obra: "rbg-26-04-0045", ref: "LIB.02", desc: "JA05 (12un), JA06 (12un)", data: "27/05/2026" });
+            historicoLib.push({ obra: "rbg-26-04-0045", ref: "LIB.03", desc: "PA01 (10un), PA02 (12un), PA03 (45un)", data: "07/07/2026" });
+
+            atualizarDropdownsProjetistas();
+            renderTabelaEquipe();
+
+            const sel = document.getElementById('globalProjetoSelector');
+            sel.innerHTML = '';
+            projetosCache.forEach(p => {
+                sel.innerHTML += `<option value="${p.id}" ${p.id === projetoAtivoId ? 'selected' : ''}>${p.codigo} - ${p.nome} (${p.projetista}) ${p.finalizada ? '[CONCLUÍDA]' : ''}</option>`;
+            });
+
+            if (document.getElementById('geminiApiKey')) {
+                document.getElementById('geminiApiKey').value = apiKey;
+            }
 
             selecionarProjetoGlobal(projetoAtivoId);
+            gerarPreviewCroquiSVG();
         };
 
+        // Gestão de Upload de Logos
+        function uploadLogoImage(event, target) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64 = e.target.result;
+                if (target === 'system') {
+                    logoSystemBase64 = base64;
+                    localStorage.setItem('msync_system_logo', base64);
+                } else if (target === 'client') {
+                    logoClientBase64 = base64;
+                    localStorage.setItem('msync_client_logo', base64);
+                }
+                carregarLogosDoStorage();
+                exibirToast("Logo atualizada e salva com sucesso!", "success");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removerLogoImage(target) {
+            if (target === 'system') {
+                logoSystemBase64 = "";
+                localStorage.removeItem('msync_system_logo');
+            } else if (target === 'client') {
+                logoClientBase64 = "";
+                localStorage.removeItem('msync_client_logo');
+            }
+            carregarLogosDoStorage();
+            exibirToast("Logo padrão restaurada.", "info");
+        }
+
+        function carregarLogosDoStorage() {
+            logoSystemBase64 = localStorage.getItem('msync_system_logo') || "";
+            logoClientBase64 = localStorage.getItem('msync_client_logo') || "";
+
+            // Topbar System Logo
+            const headSys = document.getElementById('headerSystemLogo');
+            const headSysFallback = document.getElementById('logo-fallback');
+            const prevSys = document.getElementById('previewSystemLogo');
+            const prevSysFb = document.getElementById('previewSystemLogoFallback');
+            const relSys = document.getElementById('relModalSystemLogo');
+
+            if (logoSystemBase64) {
+                if (headSys) { headSys.src = logoSystemBase64; headSys.classList.remove('d-none'); }
+                if (headSysFallback) headSysFallback.classList.add('d-none');
+                if (prevSys) { prevSys.src = logoSystemBase64; prevSys.classList.remove('d-none'); }
+                if (prevSysFb) prevSysFb.classList.add('d-none');
+                if (relSys) { relSys.src = logoSystemBase64; relSys.classList.remove('d-none'); }
+            } else {
+                if (headSys) headSys.classList.add('d-none');
+                if (headSysFallback) headSysFallback.classList.remove('d-none');
+                if (prevSys) prevSys.classList.add('d-none');
+                if (prevSysFb) prevSysFb.classList.remove('d-none');
+                if (relSys) relSys.classList.add('d-none');
+            }
+
+            // Topbar Client/Fabricator Logo
+            const headCli = document.getElementById('headerClientLogo');
+            const headCliName = document.getElementById('headerClientName');
+            const prevCli = document.getElementById('previewClientLogo');
+            const prevCliFb = document.getElementById('previewClientLogoFallback');
+            const relCli = document.getElementById('relModalClientLogo');
+
+            if (logoClientBase64) {
+                if (headCli) { headCli.src = logoClientBase64; headCli.classList.remove('d-none'); }
+                if (prevCli) { prevCli.src = logoClientBase64; prevCli.classList.remove('d-none'); }
+                if (prevCliFb) prevCliFb.classList.add('d-none');
+                if (relCli) { relCli.src = logoClientBase64; relCli.classList.remove('d-none'); }
+            } else {
+                if (headCli) headCli.classList.add('d-none');
+                if (prevCli) prevCli.classList.add('d-none');
+                if (prevCliFb) prevCliFb.classList.remove('d-none');
+                if (relCli) relCli.classList.add('d-none');
+            }
+        }
+
+        // Navegação de Abas
         function abrirAba(abaId) {
             document.querySelectorAll('.b-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
             document.getElementById('tab-' + abaId)?.classList.add('active');
             document.getElementById('screen-' + abaId)?.classList.add('active');
-            if(abaId === 'dashboard') renderGraficos();
+
+            if (abaId === 'dashboard') renderPCP();
+            if (abaId === 'ferramentas') calcularConsumoSilicone();
+            if (abaId === 'tecnica') renderEngenharia();
+            if (abaId === 'fiscal') renderFiscal();
+            if (abaId === 'importador') renderEditorLotes();
         }
 
         function selecionarProjetoGlobal(id) {
             projetoAtivoId = id;
-            document.getElementById('globalProjetoSelector').value = id;
+            const selector = document.getElementById('globalProjetoSelector');
+            if (selector && selector.value !== id) {
+                selector.value = id;
+            }
+
             const p = projetosCache.find(x => x.id === id);
-            
-            document.getElementById('chartObraNome').textContent = p ? p.nome : '---';
-            document.getElementById('fiscalObraNomeLabel').textContent = p ? p.nome : '---';
-            
-            renderMiniKanbanFiscal();
-            atualizarTodasAsTelas();
-        }
+            if (p) {
+                const labelFiscal = document.getElementById('fiscalObraNomeLabel');
+                if (labelFiscal) labelFiscal.textContent = `${p.codigo} - ${p.nome}`;
+                
+                const labelSil = document.getElementById('silObraNomeAtiva');
+                if (labelSil) labelSil.textContent = `${p.codigo} - ${p.nome}`;
 
-        function atualizarTodasAsTelas() {
-            renderEditorLotes();
-            renderFiscal();
+                const labelChart = document.getElementById('chartObraNome');
+                if (labelChart) labelChart.textContent = p.nome;
+            }
+
+            const itens = dadosProjetos[projetoAtivoId] || [];
+            let horasFila = 0;
+            itens.forEach(i => {
+                const saldoEng = Math.max(0, (i.qtd_liberada || 0) - (i.qtd_op || 0));
+                horasFila += (saldoEng * (i.tempo_padrao || 0));
+            });
+            const kpiHoras = document.getElementById('kpiHorasProjetoAtivo');
+            if (kpiHoras) kpiHoras.textContent = `${horasFila.toFixed(1)}h Fila Eng.`;
+
+            renderPCP();
             renderEngenharia();
-            renderGraficos();
-            renderPCPKanban();
-            renderHistoricoFiscal();
-            renderOPs();
+            renderFiscal();
+            renderEditorLotes();
+            calcularConsumoSilicone();
         }
 
-        // --- MÓDULO: CADASTRO E EDITOR (CONTRATO) COM FILTROS ---
-        function cadastrarNovaObraManual() {
-            const cod = document.getElementById('cadObraCodigo').value;
-            const nome = document.getElementById('cadObraNome').value;
-            if(!cod || !nome) return exibirToast("Preencha Código e Nome da Obra", "warning");
-            
-            const newId = "rbg-" + Date.now();
-            projetosCache.unshift({ id: newId, codigo: cod, nome: nome, projetista: document.getElementById('cadObraProjetista').value });
-            dadosProjetos[newId] = [];
-            
-            const sel = document.getElementById('globalProjetoSelector');
-            sel.innerHTML = `<option value="${newId}">${cod} - ${nome}</option>` + sel.innerHTML;
-            
-            document.getElementById('cadObraCodigo').value = "";
-            document.getElementById('cadObraNome').value = "";
-            selecionarProjetoGlobal(newId);
-            exibirToast("Obra Criada! Insira os itens manualmente ou via IA.", "success");
+        function filtrarKanbanObras(status) {
+            kanbanFiltroStatus = status;
+            document.getElementById('btnFilterTodasObras').className = status === 'todas' ? 'btn btn-sm btn-primary fw-bold active' : 'btn btn-sm btn-outline-primary fw-bold';
+            document.getElementById('btnFilterAtivasObras').className = status === 'ativas' ? 'btn btn-sm btn-warning fw-bold text-dark active' : 'btn btn-sm btn-outline-warning fw-bold';
+            document.getElementById('btnFilterFinalizadasObras').className = status === 'finalizadas' ? 'btn btn-sm btn-success fw-bold active' : 'btn btn-sm btn-outline-success fw-bold';
+            renderPCP();
         }
 
-        function renderEditorLotes() {
-            const tbody = document.getElementById('editorTableBody');
-            tbody.innerHTML = '';
-            const todosItens = dadosProjetos[projetoAtivoId] || [];
-            
-            const filtro = document.getElementById('filtroContratoSearch').value.toLowerCase().trim();
-            const itens = todosItens.filter(i => i.tag.toLowerCase().includes(filtro) || i.desc.toLowerCase().includes(filtro) || i.codigo.toLowerCase().includes(filtro));
-            
-            if(itens.length === 0) {
-                document.getElementById('checkAllContrato').checked = false;
-                return tbody.innerHTML = `<tr><td colspan="12" class="text-center py-4 text-muted">${filtro ? 'Nenhum item bate com o filtro.' : 'Contrato vazio. Adicione itens.'}</td></tr>`;
-            }
-
-            itens.forEach((i) => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="text-center"><input type="checkbox" class="form-check-input check-contrato" value="${i.item_id}"></td>
-                        <td class="ps-2"><input type="text" id="e_tag_${i.item_id}" class="table-inline-input text-primary" value="${i.tag}"></td>
-                        <td><input type="text" id="e_cod_${i.item_id}" class="table-inline-input text-dark" value="${i.codigo}"></td>
-                        <td><input type="text" id="e_desc_${i.item_id}" class="table-inline-input" value="${i.desc}"></td>
-                        <td>
-                            <input type="text" id="e_cor_${i.item_id}" class="table-inline-input text-muted" value="${i.cor || 'PRETO FOSCO'}" style="width:50%; display:inline-block;" placeholder="Cor">
-                            <input type="text" id="e_lin_${i.item_id}" class="table-inline-input text-muted" value="${i.linha}" style="width:45%; display:inline-block;" placeholder="Linha">
-                        </td>
-                        <td><input type="number" id="e_l_${i.item_id}" class="table-inline-input text-center" value="${i.l}"></td>
-                        <td><input type="number" id="e_h_${i.item_id}" class="table-inline-input text-center" value="${i.h}"></td>
-                        <td class="bg-primary bg-opacity-10"><input type="number" id="e_qc_${i.item_id}" class="table-inline-input text-center fw-bold text-primary" value="${i.qtd_c}"></td>
-                        <td><input type="number" step="0.01" id="e_p_${i.item_id}" class="table-inline-input text-center text-info" value="${i.peso || 0}"></td>
-                        <td><input type="number" step="0.1" id="e_t_${i.item_id}" class="table-inline-input text-center text-warning" value="${i.tempo || 0}"></td>
-                        <td><input type="text" id="e_obs_${i.item_id}" class="table-inline-input pendency-input" value="${i.obs || ''}" placeholder="Anotar status / pendência..."></td>
-                        <td class="text-center"><button class="btn btn-sm btn-outline-danger py-0" onclick="remLinhaContrato('${i.item_id}')"><i class="bi bi-x"></i></button></td>
-                    </tr>
-                `;
-            });
-        }
-
-        function toggleAllContrato(checked) {
-            document.querySelectorAll('.check-contrato').forEach(cb => cb.checked = checked);
-        }
-
-        function addNovaLinhaContrato() {
-            dadosProjetos[projetoAtivoId].unshift({ item_id: "i_"+Date.now(), tag: "NOVA", codigo: "", desc: "Esquadria Nova", loc: "Geral", linha: "GOLD", cor: "PRETO FOSCO", l: 1000, h: 1000, l_r:null, h_r:null, qtd_c: 1, qtd_l: 0, qtd_op: 0, peso: 10, tempo: 1, obs: "" });
-            document.getElementById('filtroContratoSearch').value = ""; // Limpa filtro pra ver o novo
-            atualizarTodasAsTelas();
-        }
-        
-        function remLinhaContrato(id) { 
-            dadosProjetos[projetoAtivoId] = dadosProjetos[projetoAtivoId].filter(x => x.item_id !== id);
-            atualizarTodasAsTelas(); 
-        }
-
-        function excluirItensSelecionados() {
-            const checks = document.querySelectorAll('.check-contrato:checked');
-            if(checks.length === 0) return exibirToast("Nenhum item selecionado.", "warning");
-            const ids = Array.from(checks).map(cb => cb.value);
-            dadosProjetos[projetoAtivoId] = dadosProjetos[projetoAtivoId].filter(x => !ids.includes(x.item_id));
-            document.getElementById('checkAllContrato').checked = false;
-            exibirToast(`${ids.length} itens removidos do contrato.`, "success");
-            atualizarTodasAsTelas();
-        }
-        
-        function salvarContrato() {
-            const itensRenderizados = document.querySelectorAll('.check-contrato');
-            itensRenderizados.forEach(cb => {
-                const id = cb.value;
-                const i = dadosProjetos[projetoAtivoId].find(x => x.item_id === id);
-                if(i) {
-                    i.tag = document.getElementById(`e_tag_${id}`).value;
-                    i.codigo = document.getElementById(`e_cod_${id}`).value;
-                    i.desc = document.getElementById(`e_desc_${id}`).value;
-                    i.cor = document.getElementById(`e_cor_${id}`).value;
-                    i.linha = document.getElementById(`e_lin_${id}`).value;
-                    i.l = parseInt(document.getElementById(`e_l_${id}`).value) || 0;
-                    i.h = parseInt(document.getElementById(`e_h_${id}`).value) || 0;
-                    i.qtd_c = parseInt(document.getElementById(`e_qc_${id}`).value) || 1;
-                    i.peso = parseFloat(document.getElementById(`e_p_${id}`).value) || 0;
-                    i.tempo = parseFloat(document.getElementById(`e_t_${id}`).value) || 0;
-                    i.obs = document.getElementById(`e_obs_${id}`).value;
-                }
-            });
-            exibirToast("Contrato e Pendências salvos! O Fiscal e os Relatórios foram atualizados.", "success");
-            atualizarTodasAsTelas();
-        }
-
-        // --- MÓDULO: ESPAÇO DO FISCAL ---
-        function renderMiniKanbanFiscal() {
-            const container = document.getElementById('fiscalMiniKanban');
-            container.innerHTML = '';
-            projetosCache.forEach(p => {
-                const isActive = p.id === projetoAtivoId ? 'active' : 'btn-outline-secondary';
-                container.innerHTML += `<button class="btn btn-sm ${isActive} fiscal-project-btn" onclick="selecionarProjetoGlobal('${p.id}')"><i class="bi bi-building"></i> ${p.codigo}</button>`;
-            });
-        }
-
-        function renderFiscal() {
-            const tbody = document.getElementById('fiscalTableBody');
-            tbody.innerHTML = '';
-            const itens = dadosProjetos[projetoAtivoId] || [];
-            
-            if(itens.length === 0) return tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-muted">Contrato Vazio. O comercial precisa importar os lotes.</td></tr>';
-
-            itens.forEach(i => {
-                const saldo = i.qtd_c - i.qtd_l;
-                const linhaInativa = saldo <= 0 ? 'opacity-50 bg-light' : '';
-                const campoDisabled = saldo <= 0 ? 'disabled' : '';
-
-                tbody.innerHTML += `
-                    <tr class="${linhaInativa}">
-                        <td class="fw-bold text-primary">${i.tag}</td>
-                        <td><strong>${i.desc}</strong><br><small class="text-muted"><span class="badge bg-secondary">${i.cor || 'PRETO'}</span></small></td>
-                        <td class="text-center text-muted fw-bold">${i.l} x ${i.h}</td>
-                        <td class="text-center fw-bold bg-light">${i.qtd_c}</td>
-                        <td class="text-center fw-bold text-success">${i.qtd_l}</td>
-                        <td class="text-center fw-bold text-${saldo > 0 ? 'danger' : 'muted'} border-end fs-6">${saldo}</td>
-                        <td class="p-1 bg-warning bg-opacity-10"><input type="number" id="f_l_${i.item_id}" class="form-control form-control-sm text-center fw-bold" placeholder="${i.l}" value="${i.l_r || ''}" ${campoDisabled}></td>
-                        <td class="p-1 bg-warning bg-opacity-10"><input type="number" id="f_h_${i.item_id}" class="form-control form-control-sm text-center fw-bold" placeholder="${i.h}" value="${i.h_r || ''}" ${campoDisabled}></td>
-                        <td class="p-1 bg-warning bg-opacity-10"><input type="number" id="f_q_${i.item_id}" class="form-control form-control-sm text-center fw-bold text-dark" placeholder="Qtd" ${campoDisabled}></td>
-                        <td class="p-1 text-center">
-                            ${saldo > 0 ? `<button class="btn btn-sm btn-success w-100 fw-bold shadow-sm" onclick="lancarMedicaoFiscal('${i.item_id}')"><i class="bi bi-check-lg"></i> Liberar</button>` : `<span class="badge bg-success w-100 py-2"><i class="bi bi-check-all"></i> Finalizado</span>`}
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        function lancarMedicaoFiscal(itemId) {
-            const item = dadosProjetos[projetoAtivoId].find(x => x.item_id === itemId);
-            if(!item) return;
-            
-            const q = parseInt(document.getElementById(`f_q_${itemId}`).value) || 0;
-            const saldo = item.qtd_c - item.qtd_l;
-            
-            if(q <= 0) return exibirToast("Digite a quantidade que será liberada.", "warning");
-            
-            if(q > saldo) {
-                // Alerta de Aditivo (Inteligência pedida)
-                if(confirm(`ALERTA DE ADITIVO: O saldo é ${saldo}. Você quer liberar ${q} peças. Isso configura um aditivo. Deseja registrar e alertar o PCP?`)) {
-                    item.qtd_c += (q - saldo); // Aumenta o contrato (aditivo)
-                    item.obs = `ADITIVO: Aumentado em ${q - saldo} peças na medição.`;
-                } else {
-                    return;
-                }
-            }
-            
-            item.qtd_l += q;
-            item.l_r = document.getElementById(`f_l_${itemId}`).value || item.l;
-            item.h_r = document.getElementById(`f_h_${itemId}`).value || item.h;
-            
-            const ref = prompt("Número do documento de Liberação / RFI (ex: LIB.04)?", "LIB.");
-            if(ref) {
-                historicoLib.unshift({ obra: projetoAtivoId, ref: ref, desc: `${item.tag} (${q} peças)`, data: new Date().toLocaleDateString() });
-            }
-            
-            exibirToast(`Medição e Liberação da ${item.tag} confirmada!`, 'success');
-            atualizarTodasAsTelas();
-        }
-
-        function renderHistoricoFiscal() {
-            const ct = document.getElementById('fiscalHistoricoContainer');
-            ct.innerHTML = '';
-            const histObra = historicoLib.filter(x => x.obra === projetoAtivoId);
-            
-            if(histObra.length === 0) return ct.innerHTML = '<span class="text-muted small">Nenhuma liberação registrada.</span>';
-
-            histObra.forEach(h => {
-                ct.innerHTML += `<div class="d-flex justify-content-between border-bottom py-1 small"><span><strong class="text-primary">${h.ref}</strong> - ${h.desc}</span><span class="text-muted">${h.data}</span></div>`;
-            });
-        }
-
-        // --- MÓDULO: ENGENHARIA E PENDÊNCIAS CLIENTE ---
-        function renderEngenharia() {
-            const tbody = document.getElementById('engTableBody');
-            tbody.innerHTML = '';
-            const itens = dadosProjetos[projetoAtivoId] || [];
-            
-            let hrsTotal = 0;
-
-            itens.forEach((i) => {
-                const saldoEng = i.qtd_l - i.qtd_op; 
-                if(i.qtd_l === 0 && !i.obs) return; // Se não tem lib nem pendência, ignora
-                
-                const hPeca = (saldoEng > 0) ? (saldoEng * i.tempo) : 0;
-                hrsTotal += hPeca;
-                const trClass = saldoEng > 0 ? "eng-highlight" : "";
-                
-                tbody.innerHTML += `
-                    <tr class="${trClass}">
-                        <td class="text-center"><input type="checkbox" class="form-check-input check-eng" value="${i.item_id}" ${saldoEng === 0 ? 'disabled' : ''}></td>
-                        <td class="fw-bold text-primary">${i.tag}</td>
-                        <td><strong>${i.codigo}</strong><br><small class="text-muted">${i.desc}</small></td>
-                        <td class="text-center fw-bold text-dark">${i.l_r || i.l} x ${i.h_r || i.h}</td>
-                        <td class="text-center fw-bold bg-light">${i.qtd_l}</td>
-                        <td class="text-center fw-bold text-success border-end">${i.qtd_op}</td>
-                        <td class="text-center fw-bold text-${saldoEng > 0 ? 'danger' : 'muted'} fs-6">${saldoEng}</td>
-                        <td class="text-center text-secondary">${(i.peso * Math.max(1, saldoEng)).toFixed(1)}kg</td>
-                        <td class="text-center text-warning fw-bold">${hPeca.toFixed(1)}h</td>
-                        <td class="p-1"><input type="text" id="eng_obs_${i.item_id}" class="form-control form-control-sm border-warning text-danger fw-bold" value="${i.obs || ''}" placeholder="Ex: RFI-01..." onchange="salvarObsEngenharia('${i.item_id}', this.value)"></td>
-                    </tr>
-                `;
-            });
-            document.getElementById('kpiHorasProjetoAtivo').innerHTML = `<i class="bi bi-clock-history text-warning"></i> ${hrsTotal.toFixed(1)}h Fila Eng.`;
-        }
-
-        function salvarObsEngenharia(id, val) {
-            const i = dadosProjetos[projetoAtivoId].find(x => x.item_id === id);
-            if(i) i.obs = val;
-        }
-
-        function toggleAllEng(checked) {
-            document.querySelectorAll('.check-eng:not([disabled])').forEach(cb => cb.checked = checked);
-        }
-
-        function gerarOrdemProducao() {
-            const checks = document.querySelectorAll('.check-eng:checked');
-            if(checks.length === 0) return exibirToast("Selecione os itens da fila para gerar a OP.", "warning");
-            
-            const nomeOpInput = document.getElementById('nomeNovaOP').value.trim();
-            const numOp = nomeOpInput || "OP-" + Math.floor(1000 + Math.random() * 9000);
-
-            let totalPecas = 0, totalHoras = 0, tags = [];
-
-            checks.forEach(cb => {
-                const item = dadosProjetos[projetoAtivoId].find(x => x.item_id === cb.value);
-                if(item) {
-                    const saldoEng = item.qtd_l - item.qtd_op;
-                    item.qtd_op += saldoEng; 
-                    totalPecas += saldoEng;
-                    totalHoras += (saldoEng * item.tempo);
-                    if(!tags.includes(item.tag)) tags.push(item.tag);
-                }
-            });
-
-            ordensProducao.unshift({ op: numOp, obra: projetoAtivoId, tags: tags.join(', '), pecas: totalPecas, horas: totalHoras.toFixed(1), data: new Date().toLocaleDateString() });
-
-            exibirToast(`Ordem de Produção [${numOp}] enviada para a fábrica com sucesso!`, "success");
-            document.getElementById('nomeNovaOP').value = ''; 
-            atualizarTodasAsTelas();
-            abrirAba('relatorios');
-        }
-
-        function renderOPs() {
-            const ct = document.getElementById('opsContainer');
-            ct.innerHTML = '';
-            if(ordensProducao.length === 0) return ct.innerHTML = '<div class="col-12 text-muted">Nenhuma OP gerada.</div>';
-
-            ordensProducao.forEach(op => {
-                const p = projetosCache.find(x => x.id === op.obra);
-                ct.innerHTML += `
-                    <div class="col-md-6 col-lg-4 mb-3">
-                        <div class="card border-0 shadow-sm border-start border-primary border-4 p-3 h-100 bg-white">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h5 class="fw-bold text-primary mb-0"><i class="bi bi-file-text-fill"></i> ${op.op}</h5>
-                                <span class="badge bg-light text-dark border"><i class="bi bi-calendar"></i> ${op.data}</span>
-                            </div>
-                            <h6 class="fw-bold text-dark text-truncate">${p ? p.nome : ''}</h6>
-                            <p class="text-muted small mb-2 text-truncate" title="${op.tags}"><strong>TAGs:</strong> ${op.tags}</p>
-                            <div class="d-flex justify-content-between pt-2 border-top">
-                                <span class="fw-bold text-success"><i class="bi bi-box"></i> ${op.pecas} pçs</span>
-                                <span class="fw-bold text-warning"><i class="bi bi-clock-history"></i> ${op.horas}h Produção</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        // --- MÓDULO PENDÊNCIAS CLIENTE (NOVO) ---
-        function gerarRelatorioPendencias() {
-            const itens = dadosProjetos[projetoAtivoId] || [];
-            // Pega só os itens que tem alguma anotação no campo "obs"
-            const itensComPendencia = itens.filter(i => i.obs && i.obs.trim() !== "");
-            
-            if(itensComPendencia.length === 0) {
-                return exibirToast("Nenhuma pendência anotada nesta obra. Use a coluna 'Observação / Pendência' no Editor ou na Engenharia.", "warning");
-            }
-
-            const tbody = document.getElementById('relClientTableBody');
-            tbody.innerHTML = '';
-            
-            itensComPendencia.forEach(i => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="fw-bold text-primary">${i.tag}</td>
-                        <td>${i.desc}</td>
-                        <td class="text-center"><span class="badge bg-secondary">${i.cor || 'PRETO'}</span></td>
-                        <td class="text-center fw-bold">${i.qtd_c}</td>
-                        <td class="text-center fw-bold text-success">${i.qtd_l}</td>
-                        <td class="text-danger fw-bold bg-warning bg-opacity-10">${i.obs}</td>
-                    </tr>
-                `;
-            });
-
-            const p = projetosCache.find(x => x.id === projetoAtivoId);
-            document.getElementById('relClientObraNome').textContent = p ? p.nome : '';
-            document.getElementById('relClientData').textContent = new Date().toLocaleDateString();
-
-            const modal = new bootstrap.Modal(document.getElementById('modalRelatorioCliente'));
-            modal.show();
-        }
-
-        function printModal() {
-            const printContent = document.getElementById('printAreaRelatorio').innerHTML;
-            const originalContent = document.body.innerHTML;
-            document.body.innerHTML = printContent;
-            window.print();
-            document.body.innerHTML = originalContent;
-            location.reload(); // Recarrega para voltar os eventos do JS após o print
-        }
-
-
-        function salvarChaveIA() {
-            apiKey = document.getElementById('geminiApiKey').value;
-            localStorage.setItem('gemini_api_key', apiKey);
-            exibirToast("Chave da IA salva com sucesso.", "success");
-        }
-
-        async function lerDocumentoIA(event, tipoExtracao) {
-            const file = event.target.files[0];
-            if(!file) return;
-
-            apiKey = document.getElementById('geminiApiKey').value || localStorage.getItem('gemini_api_key');
-            if(!apiKey || apiKey === "") {
-                abrirAba('parametros');
-                return exibirToast("Configure a chave da API do Gemini na aba Parâmetros.", "danger");
-            }
-
-            document.getElementById('ai-loader').style.display = 'flex';
-
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                try {
-                    const base64Data = e.target.result.split(',')[1];
-                    let prompt = "";
-                    if(tipoExtracao === 'contrato') {
-                        prompt = `Extraia a lista de esquadrias deste documento de contrato. Retorne ESTRITAMENTE um array JSON puro (sem markdown). Formato: [{"tag": "PA01", "codigo": "SUP-PCR", "desc": "Porta", "linha": "Suprema", "cor": "Preto", "l": 2000, "h": 2200, "qtd_c": 12, "peso": 45.5, "obs": "Aguardando definição"}]`;
-                    } else if (tipoExtracao === 'fiscal') {
-                        prompt = `Extraia as medidas reais e quantidades liberadas deste manuscrito do fiscal. Retorne ESTRITAMENTE um array JSON puro. Formato: [{"tag": "JA01", "l_r": 1500, "h_r": 1000, "qtd_l": 5}]`;
-                    }
-
-                    const payload = { contents: [{ parts: [{text: prompt}, {inlineData: {mimeType: file.type, data: base64Data}}] }] };
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-                    });
-
-                    const data = await response.json();
-                    if (data.error) throw new Error(data.error.message);
-
-                    let jsonStr = data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
-                    const extractedItems = JSON.parse(jsonStr);
-
-                    if(tipoExtracao === 'contrato') {
-                        extractedItems.forEach(ext => {
-                            dadosProjetos[projetoAtivoId].push({
-                                item_id: "i_ai_"+Date.now() + Math.random(), tag: ext.tag || "IA-TAG", codigo: ext.codigo || "", desc: ext.desc || "Item IA",
-                                loc: "Geral", linha: ext.linha || "", cor: ext.cor || "PRETO", l: parseInt(ext.l)||0, h: parseInt(ext.h)||0, l_r: null, h_r: null,
-                                qtd_c: parseInt(ext.qtd_c)||1, qtd_l: 0, qtd_op: 0, peso: parseFloat(ext.peso)||0, tempo: 2.0, obs: ext.obs || ""
-                            });
-                        });
-                        exibirToast(`A IA importou ${extractedItems.length} itens!`, "success");
-                    } else if (tipoExtracao === 'fiscal') {
-                        let liberados = 0;
-                        extractedItems.forEach(ext => {
-                            const itemContrato = dadosProjetos[projetoAtivoId].find(x => x.tag.toUpperCase() === ext.tag.toUpperCase());
-                            if(itemContrato) {
-                                const qLib = parseInt(ext.qtd_l) || 0;
-                                if(qLib > 0) {
-                                    itemContrato.qtd_l += qLib;
-                                    if(ext.l_r) itemContrato.l_r = ext.l_r;
-                                    if(ext.h_r) itemContrato.h_r = ext.h_r;
-                                    liberados++;
-                                }
-                            }
-                        });
-                        historicoLib.unshift({ obra: projetoAtivoId, ref: "IA.VISION", desc: `Liberação processada via IA (${liberados} itens)`, data: new Date().toLocaleDateString() });
-                        exibirToast(`A IA liberou ${liberados} TAGs!`, "success");
-                    }
-                    atualizarTodasAsTelas();
-                } catch(err) {
-                    exibirToast("Erro na IA. Verifique o arquivo.", "danger");
-                } finally {
-                    document.getElementById('ai-loader').style.display = 'none';
-                    event.target.value = ''; 
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // --- DASHBOARD KANBAN ---
-        function renderPCPKanban() {
+        function renderPCP() {
             const container = document.getElementById('kanbanPCPContainer');
+            if (!container) return;
             container.innerHTML = '';
             
-            projetosCache.forEach(p => {
-                const itens = dadosProjetos[p.id] || [];
-                let tot = 0, lib = 0, op = 0, hrs = 0;
-                itens.forEach(i => { tot += i.qtd_c; lib += i.qtd_l; op += i.qtd_op; hrs += (i.qtd_c * i.tempo); });
-                
-                if(tot === 0) return; 
+            let totGeralContrato = 0;
+            let totGeralLiberado = 0;
+            let totGeralOP = 0;
 
-                let pctLib = Math.round((lib/tot)*100);
-                let pctOp = Math.round((op/tot)*100);
+            projetosCache.forEach(p => {
+                if (kanbanFiltroStatus === 'ativas' && p.finalizada) return;
+                if (kanbanFiltroStatus === 'finalizadas' && !p.finalizada) return;
+
+                const itens = dadosProjetos[p.id] || [];
+                let tot = 0, lib = 0, op = 0, horas = 0;
+                itens.forEach(i => { 
+                    tot += i.qtd_contrato || 0; 
+                    lib += i.qtd_liberada || 0; 
+                    op += i.qtd_op || 0;
+                    horas += ((i.qtd_contrato || 0) * (i.tempo_padrao || 0)); 
+                });
                 
+                if (p.id === projetoAtivoId) {
+                    totGeralContrato = tot;
+                    totGeralLiberado = lib;
+                    totGeralOP = op;
+                }
+
+                let pct = tot > 0 ? Math.round((lib / tot) * 100) : 0;
+                let cor = p.finalizada ? 'success' : (pct === 100 ? 'success' : (pct > 0 ? 'primary' : 'secondary'));
+                let isAtivo = p.id === projetoAtivoId ? 'active-work' : '';
+                let finishedClass = p.finalizada ? 'is-finished' : '';
+
                 container.innerHTML += `
-                    <div class="col-md-4 col-xl-3">
-                        <div class="card kanban-card h-100 p-3 active-work" onclick="selecionarProjetoGlobal('${p.id}')">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="badge bg-secondary">${p.codigo}</span>
-                                <span class="badge bg-${pctOp === 100 ? 'success' : 'primary'}">${pctOp}% Produzido</span>
+                    <div class="col-md-4 col-xl-3 mb-2">
+                        <div class="card kanban-card h-100 p-3 shadow-sm ${isAtivo} ${finishedClass} border-top border-${cor} border-4" onclick="selecionarProjetoGlobal('${p.id}'); abrirAba('tecnica');">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="fw-bold text-dark text-truncate mb-0" title="${p.nome}">${p.nome}</h6>
+                                <span class="badge ${p.finalizada ? 'bg-success text-white' : 'bg-light text-primary border'}">${p.finalizada ? 'CONCLUÍDA' : p.projetista}</span>
                             </div>
-                            <h6 class="fw-bold text-dark text-truncate mb-1" title="${p.nome}">${p.nome}</h6>
-                            <small class="text-muted d-block mb-2"><i class="bi bi-person me-1"></i>${p.projetista}</small>
-                            <div class="d-flex justify-content-between small text-muted mb-1"><span>Medido Fiscal</span><span class="text-success fw-bold">${pctLib}%</span></div>
-                            <div class="progress mb-2" style="height: 4px;"><div class="progress-bar bg-success" style="width: ${pctLib}%"></div></div>
-                            <div class="d-flex justify-content-between small text-muted mb-2"><span>Ordem Produção</span><span class="text-primary fw-bold">${pctOp}%</span></div>
-                            <div class="progress mb-3" style="height: 4px;"><div class="progress-bar bg-primary" style="width: ${pctOp}%"></div></div>
-                            <div class="d-flex justify-content-between small mt-auto pt-2 border-top">
-                                <span class="fw-bold text-dark"><i class="bi bi-box"></i> ${tot} pçs</span>
-                                <span class="text-warning fw-bold"><i class="bi bi-clock"></i> ${hrs.toFixed(1)}h</span>
+                            <small class="text-muted d-block mb-2 text-truncate"><i class="bi bi-tag-fill me-1"></i>${p.codigo}</small>
+                            <div class="d-flex justify-content-between text-muted small mb-1">
+                                <span>Liberação Física</span>
+                                <span class="fw-bold text-${cor}">${pct}%</span>
+                            </div>
+                            <div class="progress mb-3" style="height: 6px;">
+                                <div class="progress-bar bg-${cor}" style="width: ${pct}%"></div>
+                            </div>
+                            <div class="d-flex justify-content-between small">
+                                <span class="badge bg-light text-dark border"><i class="bi bi-box me-1"></i>${lib}/${tot} un</span>
+                                <span class="badge bg-light text-dark border"><i class="bi bi-clock me-1 text-warning"></i>${horas.toFixed(1)}h</span>
                             </div>
                         </div>
                     </div>
                 `;
             });
+
+            renderCharts(totGeralContrato, totGeralLiberado, totGeralOP);
         }
 
-        function renderGraficos() {
-            const itens = dadosProjetos[projetoAtivoId] || [];
-            let total = 0, medido = 0, naOP = 0, hrsTotal = 0, hrsOp = 0;
-            
-            itens.forEach(i => {
-                total += i.qtd_c; medido += i.qtd_l; naOP += i.qtd_op;
-                hrsTotal += (i.qtd_c * i.tempo);
-                hrsOp += (i.qtd_op * i.tempo);
-            });
-
-            const ctxF = document.getElementById('chartFunilProducao');
-            if(ctxF && ctxF.getContext) {
-                if(chartFunil) chartFunil.destroy();
-                chartFunil = new Chart(ctxF.getContext('2d'), {
+        function renderCharts(tot, lib, op) {
+            const ctxFunil = document.getElementById('chartFunilProducao');
+            if (ctxFunil) {
+                if (chartFunilInst) chartFunilInst.destroy();
+                chartFunilInst = new Chart(ctxFunil, {
                     type: 'bar',
-                    data: { labels: ['1. Contrato', '2. Fiscal (Medido)', '3. Fábrica (OP)'], datasets: [{ label: 'Qtd Peças', data: [total, medido, naOP], backgroundColor: ['#94a3b8', '#38bdf8', '#009ef7'], borderRadius: 4 }] },
+                    data: {
+                        labels: ['Contrato', 'Liberado Fiscal', 'Emitido OP'],
+                        datasets: [{
+                            label: 'Quantidade de Peças',
+                            data: [tot, lib, op],
+                            backgroundColor: ['#475569', '#15803d', '#009ef7']
+                        }]
+                    },
                     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
                 });
             }
 
-            const ctxH = document.getElementById('chartHorasFabrica');
-            if(ctxH && ctxH.getContext) {
-                if(chartHoras) chartHoras.destroy();
-                chartHoras = new Chart(ctxH.getContext('2d'), {
+            const ctxHoras = document.getElementById('chartHorasFabrica');
+            if (ctxHoras) {
+                const itens = dadosProjetos[projetoAtivoId] || [];
+                let hEstimadas = 0, hOP = 0;
+                itens.forEach(i => {
+                    hEstimadas += ((i.qtd_contrato || 0) * (i.tempo_padrao || 0));
+                    hOP += ((i.qtd_op || 0) * (i.tempo_padrao || 0));
+                });
+
+                if (chartHorasInst) chartHorasInst.destroy();
+                chartHorasInst = new Chart(ctxHoras, {
                     type: 'doughnut',
-                    data: { labels: ['Horas Consumidas (OP)', 'Horas Restantes'], datasets: [{ data: [hrsOp, Math.max(0, hrsTotal - hrsOp)], backgroundColor: ['#f59e0b', '#f1f5f9'], borderWidth: 0 }] },
-                    options: { responsive: true, maintainAspectRatio: false, cutout: '75%' }
+                    data: {
+                        labels: ['Horas na OP (Produção)', 'Horas Restantes Pendentes'],
+                        datasets: [{
+                            data: [hOP, Math.max(0, hEstimadas - hOP)],
+                            backgroundColor: ['#009ef7', '#cbd5e1']
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
                 });
             }
         }
 
+        function renderEditorLotes() {
+            const tbody = document.getElementById('editorTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const busca = (document.getElementById('filtroContratoSearch')?.value || '').toLowerCase().trim();
+            const itens = dadosProjetos[projetoAtivoId] || [];
+
+            if (itens.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="12" class="text-center text-muted py-4">Nenhum item cadastrado nesta obra.</td></tr>';
+                return;
+            }
+
+            itens.forEach((i, idx) => {
+                if (busca && !i.tag.toLowerCase().includes(busca) && !i.descricao.toLowerCase().includes(busca)) return;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="text-center"><input type="checkbox" class="chk-contrato-item" data-idx="${idx}"></td>
+                        <td class="ps-2"><input type="text" class="table-inline-input fw-bold text-primary" value="${i.tag}" onchange="atualizarItemContrato(${idx}, 'tag', this.value)"></td>
+                        <td><input type="text" class="table-inline-input fw-bold" value="${i.codigo_esquadria || ''}" onchange="atualizarItemContrato(${idx}, 'codigo_esquadria', this.value)"></td>
+                        <td><input type="text" class="table-inline-input" value="${i.descricao}" onchange="atualizarItemContrato(${idx}, 'descricao', this.value)"></td>
+                        <td><input type="text" class="table-inline-input text-muted" value="${i.cor || i.linha}" onchange="atualizarItemContrato(${idx}, 'cor', this.value)"></td>
+                        <td><input type="number" class="table-inline-input text-center" value="${i.largura_proj}" onchange="atualizarItemContrato(${idx}, 'largura_proj', parseInt(this.value)||0)"></td>
+                        <td><input type="number" class="table-inline-input text-center" value="${i.altura_proj}" onchange="atualizarItemContrato(${idx}, 'altura_proj', parseInt(this.value)||0)"></td>
+                        <td class="bg-primary bg-opacity-10"><input type="number" class="table-inline-input text-center fw-bold text-primary" value="${i.qtd_contrato}" onchange="atualizarItemContrato(${idx}, 'qtd_contrato', parseInt(this.value)||0)"></td>
+                        <td><input type="number" step="0.001" class="table-inline-input text-center text-info fw-bold" value="${i.peso_kg || 0}" onchange="atualizarItemContrato(${idx}, 'peso_kg', parseFloat(this.value)||0)"></td>
+                        <td class="bg-warning bg-opacity-10"><input type="number" step="0.1" class="table-inline-input text-center text-dark fw-bold" value="${i.tempo_padrao || 0}" onchange="atualizarItemContrato(${idx}, 'tempo_padrao', parseFloat(this.value)||0)"></td>
+                        <td><input type="text" class="table-inline-input pendency-input" value="${i.observacao || ''}" placeholder="Digite pendência..." onchange="atualizarItemContrato(${idx}, 'observacao', this.value)"></td>
+                        <td class="text-center"><button class="btn btn-sm text-danger p-0" onclick="removerLinhaLote(${idx})"><i class="bi bi-trash fs-6"></i></button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function atualizarItemContrato(idx, campo, valor) {
+            const list = dadosProjetos[projetoAtivoId];
+            if (list && list[idx]) {
+                list[idx][campo] = valor;
+            }
+        }
+
+        function addNovaLinhaContrato() {
+            if (!dadosProjetos[projetoAtivoId]) dadosProjetos[projetoAtivoId] = [];
+            dadosProjetos[projetoAtivoId].push({
+                item_id: "itm-" + Date.now(), tag: "NOVA", codigo_esquadria: "GOL-000", descricao: "Nova Tipologia", localizacao: "Geral", linha: "GOLD", cor: "PRETO FOSCO - RAL9005F", largura_proj: 1000, altura_proj: 1000, l_real: null, h_real: null, qtd_contrato: 1, qtd_liberada: 0, qtd_op: 0, peso_kg: 10.0, tempo_padrao: 1.0, observacao: ""
+            });
+            renderEditorLotes();
+            exibirToast("Nova linha adicionada ao contrato.", "info");
+        }
+
+        function removerLinhaLote(idx) {
+            dadosProjetos[projetoAtivoId].splice(idx, 1);
+            renderEditorLotes();
+            exibirToast("Item removido.", "info");
+        }
+
+        function toggleAllContrato(checked) {
+            document.querySelectorAll('.chk-contrato-item').forEach(c => c.checked = checked);
+        }
+
+        function excluirItensSelecionados() {
+            const chks = document.querySelectorAll('.chk-contrato-item:checked');
+            if (chks.length === 0) return exibirToast("Selecione ao menos um item.", "warning");
+            
+            const idxs = Array.from(chks).map(c => parseInt(c.getAttribute('data-idx'))).sort((a,b) => b - a);
+            idxs.forEach(i => dadosProjetos[projetoAtivoId].splice(i, 1));
+            
+            renderEditorLotes();
+            exibirToast(`${idxs.length} itens removidos do contrato.`, "success");
+        }
+
+        function salvarContrato() {
+            exibirToast("Alterações do contrato salvas!", "success");
+            renderPCP();
+            renderEngenharia();
+            renderFiscal();
+        }
+
+        function cadastrarNovaObraManual() {
+            const cod = document.getElementById('cadObraCodigo').value.trim();
+            const nome = document.getElementById('cadObraNome').value.trim();
+            const proj = document.getElementById('cadObraProjetista').value;
+            if (!cod || !nome) return exibirToast("Preencha o Código e Nome da Obra.", "warning");
+
+            const newId = "rbg-" + Date.now();
+            projetosCache.push({ id: newId, codigo: cod, nome: nome, cliente: "Geral", projetista: proj, finalizada: false });
+            dadosProjetos[newId] = [];
+
+            const sel = document.getElementById('globalProjetoSelector');
+            sel.innerHTML += `<option value="${newId}">${cod} - ${nome} (${proj})</option>`;
+
+            document.getElementById('cadObraCodigo').value = "";
+            document.getElementById('cadObraNome').value = "";
+
+            exibirToast(`Obra ${nome} cadastrada com sucesso!`, "success");
+            selecionarProjetoGlobal(newId);
+        }
+
+        function renderFiscal() {
+            const mini = document.getElementById('fiscalMiniKanban');
+            if (!mini) return;
+            mini.innerHTML = '';
+
+            projetosCache.forEach(p => {
+                mini.innerHTML += `
+                    <button class="btn btn-sm fiscal-project-btn ${p.id === projetoAtivoId ? 'active' : 'btn-outline-secondary'}" onclick="selecionarProjetoGlobal('${p.id}')">
+                        ${p.codigo}
+                    </button>
+                `;
+            });
+
+            const tbody = document.getElementById('fiscalTableBody');
+            tbody.innerHTML = '';
+            const itens = dadosProjetos[projetoAtivoId] || [];
+
+            if (itens.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-4">Nenhum item cadastrado para esta obra.</td></tr>';
+                return;
+            }
+
+            itens.forEach(i => {
+                const saldo = i.qtd_contrato - i.qtd_liberada;
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="ps-3 fw-bold text-primary">${i.tag}</td>
+                        <td><strong>${i.descricao}</strong><br><small class="text-muted">${i.cor || i.linha}</small></td>
+                        <td class="text-center text-muted fw-bold">${i.largura_proj} x ${i.altura_proj}</td>
+                        <td class="text-center fw-bold">${i.qtd_contrato}</td>
+                        <td class="text-center fw-bold text-success">${i.qtd_liberada}</td>
+                        <td class="text-center fw-bold text-danger border-end">${saldo}</td>
+                        <td class="bg-warning bg-opacity-10 p-1"><input type="number" id="f_l_${i.item_id}" class="form-control form-control-sm text-center fw-bold" value="${i.l_real || i.largura_proj}"></td>
+                        <td class="bg-warning bg-opacity-10 p-1"><input type="number" id="f_h_${i.item_id}" class="form-control form-control-sm text-center fw-bold" value="${i.h_real || i.altura_proj}"></td>
+                        <td class="bg-warning bg-opacity-10 p-1"><input type="number" id="f_q_${i.item_id}" class="form-control form-control-sm text-center fw-bold text-success" value="${saldo > 0 ? saldo : 0}"></td>
+                        <td class="text-center p-1"><button class="btn btn-sm btn-success fw-bold w-100 py-0" onclick="liberarFiscal('${i.item_id}')"><i class="bi bi-check-lg"></i> Liberar</button></td>
+                    </tr>
+                `;
+            });
+
+            renderHistoricoFiscal();
+        }
+
+        function liberarFiscal(itemId) {
+            const item = dadosProjetos[projetoAtivoId].find(x => x.item_id === itemId);
+            if (!item) return;
+
+            const q = parseInt(document.getElementById(`f_q_${itemId}`).value) || 0;
+            const l = parseInt(document.getElementById(`f_l_${itemId}`).value) || item.largura_proj;
+            const h = parseInt(document.getElementById(`f_h_${itemId}`).value) || item.altura_proj;
+
+            if (q <= 0) return exibirToast("Informe uma quantidade válida a liberar.", "warning");
+
+            const saldo = item.qtd_contrato - item.qtd_liberada;
+            if (q > saldo) {
+                exibirToast(`ALERTA DE ADITIVO: A quantidade liberada (${q}) excede o saldo do contrato (${saldo}).`, "danger");
+            }
+
+            item.qtd_liberada += q;
+            item.l_real = l;
+            item.h_real = h;
+
+            historicoLib.unshift({
+                obra: projetoAtivoId,
+                ref: "LIB." + (historicoLib.length + 1).toString().padStart(2, '0'),
+                desc: `${item.tag} (${q} un - ${l}x${h}mm)`,
+                data: new Date().toLocaleDateString('pt-BR')
+            });
+
+            exibirToast(`TAG ${item.tag} liberada com sucesso!`, "success");
+            selecionarProjetoGlobal(projetoAtivoId);
+        }
+
+        function renderHistoricoFiscal() {
+            const cont = document.getElementById('fiscalHistoricoContainer');
+            if (!cont) return;
+            cont.innerHTML = '';
+
+            const list = historicoLib.filter(x => x.obra === projetoAtivoId);
+            if (list.length === 0) {
+                cont.innerHTML = '<small class="text-muted d-block">Nenhuma liberação registrada nesta obra ainda.</small>';
+                return;
+            }
+
+            list.forEach(h => {
+                cont.innerHTML += `
+                    <div class="d-flex justify-content-between align-items-center border-bottom py-1 small">
+                        <span class="badge bg-warning text-dark me-2">${h.ref}</span>
+                        <span class="fw-bold text-dark flex-grow-1">${h.desc}</span>
+                        <small class="text-muted ms-2">${h.data}</small>
+                    </div>
+                `;
+            });
+        }
+
+        function renderEngenharia() {
+            const tbody = document.getElementById('engTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const itens = dadosProjetos[projetoAtivoId] || [];
+            if (itens.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-4">Nenhum item disponível.</td></tr>';
+                return;
+            }
+
+            itens.forEach((i, idx) => {
+                const filaEng = Math.max(0, i.qtd_liberada - i.qtd_op);
+                const pesoTot = (i.peso_kg || 0) * i.qtd_contrato;
+                const horasTot = (i.tempo_padrao || 0) * i.qtd_contrato;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="text-center"><input type="checkbox" class="chk-eng-item" data-idx="${idx}"></td>
+                        <td class="ps-3 fw-bold text-primary">${i.tag}</td>
+                        <td><strong>${i.descricao}</strong><br><small class="text-muted">${i.codigo_esquadria}</small></td>
+                        <td class="text-center fw-bold text-dark">${i.l_real ? i.l_real + 'x' + i.h_real : 'Pendente'}</td>
+                        <td class="text-center fw-bold text-success bg-light">${i.qtd_liberada}</td>
+                        <td class="text-center fw-bold text-primary border-end">${i.qtd_op}</td>
+                        <td class="text-center fw-bold text-danger fs-6">${filaEng}</td>
+                        <td class="text-center text-secondary fw-bold">${pesoTot.toFixed(2)} kg</td>
+                        <td class="text-center text-warning fw-bold">${horasTot.toFixed(1)} h</td>
+                        <td><input type="text" class="table-inline-input" value="${i.observacao || ''}" placeholder="Observação / RFI..." onchange="atualizarItemContrato(${idx}, 'observacao', this.value)"></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function toggleAllEng(checked) {
+            document.querySelectorAll('.chk-eng-item').forEach(c => c.checked = checked);
+        }
+
+        function gerarOrdemProducao() {
+            const nomeOP = document.getElementById('nomeNovaOP').value.trim();
+            if (!nomeOP) return exibirToast("Digite o nome ou número da nova O.P.", "warning");
+
+            const chks = document.querySelectorAll('.chk-eng-item:checked');
+            if (chks.length === 0) return exibirToast("Selecione ao menos uma tipologia para incluir na O.P.", "warning");
+
+            const list = dadosProjetos[projetoAtivoId];
+            let pecasOp = 0;
+            let tagsInclusas = [];
+
+            chks.forEach(c => {
+                const idx = parseInt(c.getAttribute('data-idx'));
+                const item = list[idx];
+                const fila = Math.max(0, item.qtd_liberada - item.qtd_op);
+                if (fila > 0) {
+                    item.qtd_op += fila;
+                    pecasOp += fila;
+                    tagsInclusas.push(`${item.tag} (${fila}un)`);
+                }
+            });
+
+            if (pecasOp === 0) return exibirToast("Os itens selecionados não possuem saldo na fila da Engenharia.", "warning");
+
+            ordensProducao.unshift({
+                id: "op-" + Date.now(),
+                obra: projetoAtivoId,
+                numero: nomeOP,
+                pecas: pecasOp,
+                tags: tagsInclusas.join(', '),
+                data: new Date().toLocaleDateString('pt-BR')
+            });
+
+            document.getElementById('nomeNovaOP').value = '';
+            exibirToast(`Ordem de Produção ${nomeOP} emitida para ${pecasOp} peças!`, "success");
+            
+            renderEngenharia();
+            renderPCP();
+            renderOPs();
+        }
+
+        function renderOPs() {
+            const cont = document.getElementById('opsContainer');
+            if (!cont) return;
+            cont.innerHTML = '';
+
+            const ops = ordensProducao.filter(x => x.obra === projetoAtivoId);
+            if (ops.length === 0) {
+                cont.innerHTML = '<div class="col-12 text-muted">Nenhuma Ordem de Produção emitida nesta obra ainda.</div>';
+                return;
+            }
+
+            ops.forEach(op => {
+                cont.innerHTML += `
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-0 shadow-sm p-3 bg-white border-start border-primary border-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="fw-bold text-primary mb-0"><i class="bi bi-file-earmark-check me-2"></i>${op.numero}</h6>
+                                <small class="text-muted fw-bold">${op.data}</small>
+                            </div>
+                            <p class="small text-dark mb-2"><strong>Tipologias Inclusas:</strong> ${op.tags}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-success">${op.pecas} Peças Liberadas</span>
+                                <button class="btn btn-sm btn-outline-secondary py-0" onclick="window.print()"><i class="bi bi-printer"></i> Imprimir OP</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function toggleCalcoCampos() {
+            const comCalco = document.getElementById('silCheckComCalco').checked;
+            document.getElementById('silCalcoBox').style.display = comCalco ? 'flex' : 'none';
+        }
+
+        function calcularConsumoSilicone() {
+            const W = parseFloat(document.getElementById('silLarguraJunta').value) || 0;
+            const D = parseFloat(document.getElementById('silProfundidadeJunta').value) || 0;
+            const comCalco = document.getElementById('silCheckComCalco').checked;
+            let cA = comCalco ? (parseFloat(document.getElementById('silLarguraCalco').value) || 0) : 0;
+            let cB = comCalco ? (parseFloat(document.getElementById('silEspessuraCalco').value) || 0) : 0;
+
+            const margemPerda = (parseFloat(document.getElementById('silMargemPerda').value) || 15) / 100;
+            const volEmbalagemMl = parseFloat(document.getElementById('silTipoEmbalagem').value) || 600;
+            const precoUnidade = parseFloat(document.getElementById('silPrecoUnidade').value) || 0;
+
+            const areaBruta = W * D;
+            const areaCalco = cA * cB;
+            const areaLiquida = Math.max(1, areaBruta - areaCalco);
+
+            const badge = document.getElementById('silAreaResultadoBadge');
+            if (badge) badge.textContent = `Área Líquida: ${areaLiquida.toFixed(1)} mm²`;
+
+            const tbodyObra = document.getElementById('silObraTableBody');
+            if (!tbodyObra) return;
+            tbodyObra.innerHTML = "";
+
+            let perimetroObraTotalM = 0;
+            let sachesObraTotal = 0;
+            const itens = dadosProjetos[projetoAtivoId] || [];
+
+            if (itens.length === 0) {
+                tbodyObra.innerHTML = '<tr><td colspan="5" class="text-center py-3 text-muted">Sem itens na obra.</td></tr>';
+            } else {
+                itens.forEach(item => {
+                    const largM = (item.l_real || item.largura_proj || 0) / 1000;
+                    const altM = (item.h_real || item.altura_proj || 0) / 1000;
+                    const qtd = item.qtd_contrato || 1;
+
+                    const perimetroPecaM = 2 * (largM + altM);
+                    const perimetroTotalItemM = perimetroPecaM * qtd;
+                    perimetroObraTotalM += perimetroTotalItemM;
+
+                    const volItemMl = (areaLiquida * (perimetroTotalItemM * 1000) / 1000) * (1 + margemPerda);
+                    const sachesItem = Math.ceil(volItemMl / volEmbalagemMl);
+                    sachesObraTotal += sachesItem;
+
+                    tbodyObra.innerHTML += `
+                        <tr>
+                            <td class="fw-bold text-primary">${item.tag}</td>
+                            <td>${item.descricao}</td>
+                            <td class="text-center fw-bold">${qtd}</td>
+                            <td class="text-center">${perimetroTotalItemM.toFixed(2)} m</td>
+                            <td class="text-center fw-bold text-success">${sachesItem} un</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            document.getElementById('silObraMetros').textContent = `${perimetroObraTotalM.toFixed(1)} m`;
+            document.getElementById('silObraSaches').textContent = `${sachesObraTotal} un`;
+            document.getElementById('silObraCusto').textContent = `R$ ${(sachesObraTotal * precoUnidade).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+        }
+
+        function cadastrarProfissionalEquipe() {
+            const nome = document.getElementById('novoProfissionalNome').value.trim().toUpperCase();
+            const cargo = document.getElementById('novoProfissionalCargo').value;
+            if (!nome) return exibirToast("Preencha o nome do profissional.", "warning");
+
+            equipeProfissionais.push({ id: "prof-" + Date.now(), nome: nome, cargo: cargo, ativo: true });
+            document.getElementById('novoProfissionalNome').value = "";
+            
+            renderTabelaEquipe();
+            atualizarDropdownsProjetistas();
+            exibirToast(`Profissional ${nome} cadastrado!`, "success");
+        }
+
+        function renderTabelaEquipe() {
+            const tbody = document.getElementById('tabelaEquipeBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            
+            equipeProfissionais.forEach(p => {
+                const bgCargo = p.cargo === 'Projetista' ? 'bg-primary' : (p.cargo === 'Fiscal de Obra' ? 'bg-warning text-dark' : 'bg-info text-white');
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="ps-3 fw-bold text-dark">${p.nome}</td>
+                        <td><span class="badge ${bgCargo}">${p.cargo}</span></td>
+                        <td class="text-center"><span class="badge ${p.ativo ? 'bg-success' : 'bg-secondary'}">${p.ativo ? 'Ativo' : 'Inativo'}</span></td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="removerProfissional('${p.id}')"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function removerProfissional(id) {
+            equipeProfissionais = equipeProfissionais.filter(x => x.id !== id);
+            renderTabelaEquipe();
+            atualizarDropdownsProjetistas();
+            exibirToast("Profissional removido.", "info");
+        }
+
+        function atualizarDropdownsProjetistas() {
+            const selObra = document.getElementById('cadObraProjetista');
+            if (!selObra) return;
+            selObra.innerHTML = '';
+            
+            const projetistas = equipeProfissionais.filter(p => p.cargo === 'Projetista' && p.ativo);
+            projetistas.forEach(p => {
+                selObra.innerHTML += `<option value="${p.nome}">${p.nome}</option>`;
+            });
+        }
+
+        function salvarChaveIA() {
+            apiKey = document.getElementById('geminiApiKey').value;
+            exibirToast("Chave da API Gemini atualizada com sucesso!", "success");
+        }
+
+        function lerDocumentoIA(event, tipo) {
+            const loader = document.getElementById('ai-loader');
+            if (loader) loader.style.display = 'flex';
+
+            setTimeout(() => {
+                if (loader) loader.style.display = 'none';
+                exibirToast(`Documento de ${tipo} processado pela IA! Dados mapeados.`, "success");
+            }, 2000);
+        }
+
+        function gerarRelatorioPendencias() {
+            const p = projetosCache.find(x => x.id === projetoAtivoId);
+            const operadorNome = document.getElementById('inputNomeOperadorAtivo').value || 'Eng. Mariano Moraes';
+
+            document.getElementById('relClientObraNome').textContent = p ? `${p.codigo} - ${p.nome}` : '---';
+            document.getElementById('relClientData').textContent = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('relSignOperadorName').textContent = operadorNome;
+
+            // Logos para Modal de Impressão
+            const modCliLog = document.getElementById('relModalClientLogo');
+            if (modCliLog) {
+                if (logoClientBase64) { modCliLog.src = logoClientBase64; modCliLog.classList.remove('d-none'); }
+                else modCliLog.classList.add('d-none');
+            }
+            const modSysLog = document.getElementById('relModalSystemLogo');
+            if (modSysLog) {
+                if (logoSystemBase64) { modSysLog.src = logoSystemBase64; modSysLog.classList.remove('d-none'); }
+                else modSysLog.classList.add('d-none');
+            }
+
+            const tbody = document.getElementById('relClientTableBody');
+            tbody.innerHTML = '';
+            const itens = dadosProjetos[projetoAtivoId] || [];
+
+            itens.forEach(i => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="fw-bold text-primary">${i.tag}</td>
+                        <td><strong>${i.descricao}</strong></td>
+                        <td class="text-center">${i.cor || i.linha}</td>
+                        <td class="text-center fw-bold">${i.qtd_contrato}</td>
+                        <td class="text-center text-success fw-bold">${i.qtd_liberada}</td>
+                        <td class="text-danger fw-bold">${i.observacao || 'Sem pendência registrada.'}</td>
+                    </tr>
+                `;
+            });
+
+            const m = new bootstrap.Modal(document.getElementById('modalRelatorioCliente'));
+            m.show();
+        }
+
+        function abrirModalSuperCroquis() {
+            const m = new bootstrap.Modal(document.getElementById('modalSuperCroquis'));
+            m.show();
+            gerarPreviewCroquiSVG();
+        }
+
+        function gerarPreviewCroquiSVG() {
+            const tipo = document.getElementById('croquiTipoSelect').value;
+            const L = parseInt(document.getElementById('croquiLarguraInput').value) || 2000;
+            const H = parseInt(document.getElementById('croquiAlturaInput').value) || 1000;
+            const container = document.getElementById('croquiSVGContainer');
+
+            let svgContent = '';
+
+            if (tipo === 'correr2') {
+                svgContent = `
+                    <svg viewBox="0 0 400 220" width="100%" height="200">
+                        <rect x="20" y="20" width="360" height="160" fill="#f1f5f9" stroke="#0f172a" stroke-width="4"/>
+                        <rect x="24" y="24" width="176" height="152" fill="#e2e8f0" stroke="#009ef7" stroke-width="3"/>
+                        <rect x="198" y="24" width="178" height="152" fill="#e2e8f0" stroke="#009ef7" stroke-width="3"/>
+                        <!-- Setas de Abertura -->
+                        <path d="M 80 100 L 130 100 M 115 90 L 130 100 L 115 110" stroke="#009ef7" stroke-width="3" fill="none"/>
+                        <path d="M 320 100 L 270 100 M 285 90 L 270 100 L 285 110" stroke="#009ef7" stroke-width="3" fill="none"/>
+                        <!-- Cotas -->
+                        <text x="200" y="15" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="middle">L = ${L} mm</text>
+                        <text x="390" y="100" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="middle" transform="rotate(90,390,100)">H = ${H} mm</text>
+                    </svg>
+                `;
+            } else if (tipo === 'correr3') {
+                svgContent = `
+                    <svg viewBox="0 0 400 220" width="100%" height="200">
+                        <rect x="20" y="20" width="360" height="160" fill="#f1f5f9" stroke="#0f172a" stroke-width="4"/>
+                        <rect x="24" y="24" width="118" height="152" fill="#e2e8f0" stroke="#009ef7" stroke-width="3"/>
+                        <rect x="140" y="24" width="118" height="152" fill="#e2e8f0" stroke="#009ef7" stroke-width="3"/>
+                        <rect x="256" y="24" width="120" height="152" fill="#e2e8f0" stroke="#009ef7" stroke-width="3"/>
+                        <path d="M 60 100 L 100 100 M 90 90 L 100 100 L 90 110" stroke="#009ef7" stroke-width="3" fill="none"/>
+                        <path d="M 180 100 L 220 100 M 210 90 L 220 100 L 210 110" stroke="#009ef7" stroke-width="3" fill="none"/>
+                        <text x="200" y="15" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="middle">L = ${L} mm (3 Folhas)</text>
+                    </svg>
+                `;
+            } else if (tipo === 'maximar') {
+                svgContent = `
+                    <svg viewBox="0 0 300 220" width="100%" height="200">
+                        <rect x="50" y="20" width="200" height="160" fill="#f1f5f9" stroke="#0f172a" stroke-width="4"/>
+                        <rect x="58" y="28" width="184" height="144" fill="#e0f2fe" stroke="#009ef7" stroke-width="3"/>
+                        <path d="M 60 168 L 150 32 L 240 168" stroke="#b45309" stroke-width="2" stroke-dasharray="4,4" fill="none"/>
+                        <text x="150" y="15" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="middle">L = ${L} mm x H = ${H} mm</text>
+                    </svg>
+                `;
+            } else {
+                svgContent = `
+                    <svg viewBox="0 0 360 220" width="100%" height="200">
+                        <rect x="30" y="20" width="300" height="160" fill="#f1f5f9" stroke="#0f172a" stroke-width="4"/>
+                        <line x1="30" y1="70" x2="330" y2="70" stroke="#0f172a" stroke-width="3"/>
+                        <line x1="180" y1="20" x2="180" y2="180" stroke="#0f172a" stroke-width="3"/>
+                        <text x="180" y="15" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="middle">Fachada Grid / Bandeira (${L}x${H}mm)</text>
+                    </svg>
+                `;
+            }
+
+            container.innerHTML = svgContent;
+        }
+
+        function copiarSVGToClipboard() {
+            const svgText = document.getElementById('croquiSVGContainer').innerHTML;
+            const textarea = document.createElement('textarea');
+            textarea.value = svgText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            exibirToast("Código SVG copiado para a área de transferência!", "success");
+        }
+
+        function printModal() {
+            window.print();
+        }
+
         function exibirToast(msg, tipo = 'info') {
             const ct = document.getElementById('toastContainer');
+            if (!ct) return;
             const t = document.createElement('div');
             t.className = `alert alert-${tipo} alert-dismissible fade show shadow-lg mb-2`;
-            t.innerHTML = `<small class="fw-bold">${msg}</small><button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+            t.innerHTML = `<small class="fw-bold">${msg}</small><button class="btn-close" data-bs-dismiss="alert"></button>`;
             ct.appendChild(t);
             setTimeout(() => t.remove(), 4000);
         }
